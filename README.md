@@ -1,4 +1,4 @@
-# Mail Automation Scripts
+# CleanMailer
 
 This repository contains small utilities for filtering email lists, checking domain validity, sending bulk emails and gathering feedback through IMAP accounts.
 
@@ -9,10 +9,10 @@ This repository contains small utilities for filtering email lists, checking dom
    pip install -r requirements.txt
    ```
 2. Define the following environment variables before running the scripts:
-   - `MAIL_OTO_HOME` (optional): root directory containing input, reports and other folders. Defaults to `/opt/mail_oto`.
+   - `CLEANMAILER_HOME` (optional): root directory containing input, reports and other folders. Defaults to `/opt/clean_mailer`.
    - SMTP settings (`SMTP_SENDER`, `SMTP_RECEIVER`, `SMTP_SERVER`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`) for `mailer.py`.
    - IMAP settings (`IMAP_HOST`, `IMAP_PORT`, `EMAIL_USER`, `EMAIL_PASS`) for `imap_dump.py`.
-3. Ensure a `logs/` directory exists under `MAIL_OTO_HOME`. Most scripts will create it automatically if missing.
+3. Ensure a `logs/` directory exists under `CLEANMAILER_HOME`. Most scripts will create it automatically if missing.
 
 ## Scripts
 
@@ -23,4 +23,4 @@ This repository contains small utilities for filtering email lists, checking dom
 - `scripts/05_export_clean_list.py` – Produces a final cleaned list excluding bounced addresses.
 - `scripts/imap_dump.py` – Simple IMAP dump utility. Credentials must be provided via environment variables.
 
-Most scripts rely on Excel files located in the directories under `MAIL_OTO_HOME`.
+Most scripts rely on Excel files located in the directories under `CLEANMAILER_HOME`.

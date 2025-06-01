@@ -3,7 +3,7 @@ import os
 import pandas as pd
 
 
-ROOT = os.environ.get("MAIL_OTO_HOME", "/opt/mail_oto")
+ROOT = os.environ.get("CLEANMAILER_HOME", "/opt/clean_mailer")
 INPUT_PATH = os.path.join(ROOT, "input", "Receivers.xlsx")
 CHECKED_DIR = os.path.join(ROOT, "checked")
 REPORT_PATH = os.path.join(ROOT, "reports", "kontrol_edilmemis.xlsx")
