@@ -8,11 +8,12 @@ from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 
 # Dosya yolları
-MAIL_LIST_FILE = "/opt/mail_oto/reports/aktif_mailler.xlsx"
-SENDERS_FILE = "/opt/mail_oto/input/Senders.xlsx"
-TEMPLATE_FILE = "/opt/mail_oto/templates/mail_template.txt"
-LOG_FILE = "/opt/mail_oto/logs/send.log"
-COUNTER_FILE = "/opt/mail_oto/logs/daily_counter.json"
+ROOT = os.environ.get("MAIL_OTO_HOME", "/opt/mail_oto")
+MAIL_LIST_FILE = os.path.join(ROOT, "reports", "aktif_mailler.xlsx")
+SENDERS_FILE = os.path.join(ROOT, "input", "Senders.xlsx")
+TEMPLATE_FILE = os.path.join(ROOT, "templates", "mail_template.txt")
+LOG_FILE = os.path.join(ROOT, "logs", "send.log")
+COUNTER_FILE = os.path.join(ROOT, "logs", "daily_counter.json")
 
 # Mail içeriğini oku
 with open(TEMPLATE_FILE, "r", encoding="utf-8") as f:
@@ -55,51 +56,51 @@ if today not in counters_all:
 
 daily_counter = counters_all[today]
 
-# Gönderim logunu başlat
-with open(LOG_FILE, "a", encoding="utf-8") as log:
-    log.write(f"\n--- Gönderim Başladı: {datetime.now()} ---\n")
-
 # Hedef listeyi yükle
 df_targets = pd.read_excel(MAIL_LIST_FILE)
 sent_count = 0
 
-for index, row in df_targets.iterrows():
-    recipient = row["email"]
+with open(LOG_FILE, "a", encoding="utf-8") as log:
+    log.write(f"\n--- Gönderim Başladı: {datetime.now()} ---\n")
 
-    # Uygun bir SMTP hesabı bul
-    sender = None
-    for account in smtp_accounts:
-        email = account["smtp_user"]
-        used = daily_counter.get(email, 0)
-        if used < account["limit"]:
-            sender = account
+    for index, row in df_targets.iterrows():
+        recipient = row["email"]
+
+        # Uygun bir SMTP hesabı bul
+        sender = None
+        for account in smtp_accounts:
+            email = account["smtp_user"]
+            used = daily_counter.get(email, 0)
+            if used < account["limit"]:
+                sender = account
+                break
+
+        if not sender:
+            print("Uygun SMTP hesabı kalmadı. Gönderim durduruldu.")
             break
 
-    if not sender:
-        print("Uygun SMTP hesabı kalmadı. Gönderim durduruldu.")
-        break
+        # Mail oluştur
+        msg = MIMEMultipart()
+        msg["From"] = f"{sender['from_name']} <{sender['smtp_user']}>"
+        msg["To"] = recipient
+        msg["Subject"] = "Potential Business Collaboration Inquiry"
+        msg.attach(MIMEText(mail_body, "plain"))
 
-    # Mail oluştur
-    msg = MIMEMultipart()
-    msg["From"] = f"{sender['from_name']} <{sender['smtp_user']}>"
-    msg["To"] = recipient
-    msg["Subject"] = "Potential Business Collaboration Inquiry"
-    msg.attach(MIMEText(mail_body, "plain"))
+        try:
+            server = smtplib.SMTP_SSL(sender["smtp_host"], int(sender["smtp_port"]))
+            server.login(sender["smtp_user"], sender["smtp_pass"])
+            server.sendmail(sender["smtp_user"], recipient, msg.as_string())
+            server.quit()
+            status = f"[OK] {recipient} - {sender['smtp_user']}"
+            daily_counter[sender["smtp_user"]] = daily_counter.get(sender["smtp_user"], 0) + 1
+            sent_count += 1
+        except Exception as e:
+            status = f"[ERROR] {recipient} - {str(e)}"
 
-    try:
-        server = smtplib.SMTP_SSL(sender["smtp_host"], int(sender["smtp_port"]))
-        server.login(sender["smtp_user"], sender["smtp_pass"])
-        server.sendmail(sender["smtp_user"], recipient, msg.as_string())
-        server.quit()
-        status = f"[OK] {recipient} - {sender['smtp_user']}"
-        daily_counter[sender["smtp_user"]] = daily_counter.get(sender["smtp_user"], 0) + 1
-        sent_count += 1
-    except Exception as e:
-        status = f"[ERROR] {recipient} - {str(e)}"
-
-    # Log yaz
-    with open(LOG_FILE, "a", encoding="utf-8") as log:
+        # Log yaz
         log.write(status + "\n")
+
+    log.write(f"--- Gönderim Bitti: {datetime.now()} ---\n")
 
 # Sayaçları güncelle
 counters_all[today] = daily_counter
@@ -108,4 +109,3 @@ with open(COUNTER_FILE, "w") as f:
 
 print(f"Toplam gönderilen e-posta: {sent_count}")
 
-print("Kod güncellendi - test")

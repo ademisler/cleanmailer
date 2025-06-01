@@ -3,10 +3,11 @@ import pandas as pd
 import os
 
 # Dosya yolları
-ACTIVE_MAILS = "/opt/mail_oto/reports/aktif_mailler.xlsx"
-BOUNCED = "/opt/mail_oto/reports/bounced.xlsx"
-REPLIED = "/opt/mail_oto/reports/replied.xlsx"
-OUTPUT_FILE = "/opt/mail_oto/reports/temiz_liste_final.xlsx"
+ROOT = os.environ.get("MAIL_OTO_HOME", "/opt/mail_oto")
+ACTIVE_MAILS = os.path.join(ROOT, "reports", "aktif_mailler.xlsx")
+BOUNCED = os.path.join(ROOT, "reports", "bounced.xlsx")
+REPLIED = os.path.join(ROOT, "reports", "replied.xlsx")
+OUTPUT_FILE = os.path.join(ROOT, "reports", "temiz_liste_final.xlsx")
 
 # Aktif mailleri yükle
 df_active = pd.read_excel(ACTIVE_MAILS)
@@ -40,7 +41,11 @@ print(f"Temiz liste oluşturuldu: {len(df_clean)} adres kaydedildi.")
 import shutil
 from datetime import datetime
 
-backup_path = f"/opt/mail_oto/checked/temiz_liste_{datetime.now().strftime('%Y%m%d')}.xlsx"
+backup_path = os.path.join(
+    ROOT,
+    "checked",
+    f"temiz_liste_{datetime.now().strftime('%Y%m%d')}.xlsx"
+)
 shutil.copy(OUTPUT_FILE, backup_path)
 
 print(f"Yedek kopya oluşturuldu: {backup_path}")

@@ -5,9 +5,11 @@ import imaplib
 import email
 from email.mime.text import MIMEText
 from datetime import datetime
+import os
 
-SENDERS_FILE = "/opt/mail_oto/input/Senders.xlsx"
-LOG_FILE = "/opt/mail_oto/logs/account_test.log"
+ROOT = os.environ.get("MAIL_OTO_HOME", "/opt/mail_oto")
+SENDERS_FILE = os.path.join(ROOT, "input", "Senders.xlsx")
+LOG_FILE = os.path.join(ROOT, "logs", "account_test.log")
 
 df = pd.read_excel(SENDERS_FILE)
 df.columns = df.columns.str.strip()

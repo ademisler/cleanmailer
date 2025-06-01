@@ -2,9 +2,12 @@
 import pandas as pd
 import os
 
-INPUT_PATH = "/opt/mail_oto/input/Receivers.xlsx"
-CHECKED_DIR = "/opt/mail_oto/checked/"
-REPORT_PATH = "/opt/mail_oto/reports/kontrol_edilmemis.xlsx"
+# Proje kök dizini ortam değişkeninden okunur, yoksa varsayılanı kullanılır
+ROOT = os.environ.get("MAIL_OTO_HOME", "/opt/mail_oto")
+
+INPUT_PATH = os.path.join(ROOT, "input", "Receivers.xlsx")
+CHECKED_DIR = os.path.join(ROOT, "checked")
+REPORT_PATH = os.path.join(ROOT, "reports", "kontrol_edilmemis.xlsx")
 
 # Alıcı listesini oku
 df_receivers = pd.read_excel(INPUT_PATH)

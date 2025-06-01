@@ -7,10 +7,11 @@ from email.header import decode_header
 from email.utils import parseaddr
 from imapclient import imap_utf7
 
-# 🔧 Dosya yolları (mutlak yollarla)
-SENDERS_FILE = "/opt/mail_oto/input/Senders.xlsx"
-TEST_BOUNCE = "/opt/mail_oto/reports/test_bounced.xlsx"
-TEST_REPLY = "/opt/mail_oto/reports/test_replied.xlsx"
+# 🔧 Dosya yolları
+ROOT = os.environ.get("MAIL_OTO_HOME", "/opt/mail_oto")
+SENDERS_FILE = os.path.join(ROOT, "input", "Senders.xlsx")
+TEST_BOUNCE = os.path.join(ROOT, "reports", "test_bounced.xlsx")
+TEST_REPLY = os.path.join(ROOT, "reports", "test_replied.xlsx")
 
 # Sonuç listeleri
 all_bounced = []
