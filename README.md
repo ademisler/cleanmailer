@@ -12,6 +12,7 @@ This repository contains small utilities for filtering email lists, checking dom
    - `MAIL_OTO_HOME` (optional): root directory containing input, reports and other folders. Defaults to `/opt/mail_oto`.
    - SMTP settings (`SMTP_SENDER`, `SMTP_RECEIVER`, `SMTP_SERVER`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`) for `mailer.py`.
    - IMAP settings (`IMAP_HOST`, `IMAP_PORT`, `EMAIL_USER`, `EMAIL_PASS`) for `imap_dump.py`.
+3. Ensure a `logs/` directory exists under `MAIL_OTO_HOME`. Most scripts will create it automatically if missing.
 
 ## Scripts
 
