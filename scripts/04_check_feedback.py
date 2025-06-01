@@ -44,7 +44,7 @@ def main():
             mail = imaplib.IMAP4_SSL(imap_host, imap_port)
             mail.login(imap_user, imap_pass)
 
-            typ, folders = mail.list()
+            _, folders = mail.list()
 
             for folder in folders:
                 decoded = folder.decode()
