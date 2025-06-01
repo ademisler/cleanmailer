@@ -6,10 +6,12 @@ from email.header import decode_header
 from email.utils import parseaddr
 import re
 from imapclient import imap_utf7
+import os
 
-SENDERS_FILE = "/opt/mail_oto/input/Senders.xlsx"
-BOUNCE_FILE = "/opt/mail_oto/reports/bounced.xlsx"
-REPLY_FILE = "/opt/mail_oto/reports/replied.xlsx"
+ROOT = os.environ.get("MAIL_OTO_HOME", "/opt/mail_oto")
+SENDERS_FILE = os.path.join(ROOT, "input", "Senders.xlsx")
+BOUNCE_FILE = os.path.join(ROOT, "reports", "bounced.xlsx")
+REPLY_FILE = os.path.join(ROOT, "reports", "replied.xlsx")
 
 all_bounced = []
 all_replied = []

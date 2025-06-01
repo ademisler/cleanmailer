@@ -3,12 +3,13 @@ import imaplib
 import email
 from email.header import decode_header
 from email.utils import parseaddr
+import os
 
-# Hedef hesap bilgileri (şifreyi elle doldur!)
-IMAP_HOST = "mail-fr.securemail.pro"
-IMAP_PORT = 993
-EMAIL_USER = "liora@mercufra.com"
-EMAIL_PASS = "Pass323423@DSV"  # ← buraya şifreyi yaz
+# Hedef hesap bilgileri ortam değişkenlerinden okunur
+IMAP_HOST = os.environ.get("IMAP_HOST")
+IMAP_PORT = int(os.environ.get("IMAP_PORT", 993))
+EMAIL_USER = os.environ.get("EMAIL_USER")
+EMAIL_PASS = os.environ.get("EMAIL_PASS")
 
 def decode_mime_words(s):
     try:
@@ -21,6 +22,9 @@ def decode_mime_words(s):
         return s
 
 def main():
+    if not all([IMAP_HOST, EMAIL_USER, EMAIL_PASS]):
+        print("[ERROR] Gerekli IMAP bilgileri tanımlı değil.")
+        return
     try:
         mail = imaplib.IMAP4_SSL(IMAP_HOST, IMAP_PORT)
         mail.login(EMAIL_USER, EMAIL_PASS)
