@@ -12,6 +12,19 @@ def send_report(subject, body, attachments=None):
     smtp_user = os.environ.get("SMTP_USER")
     smtp_pass = os.environ.get("SMTP_PASS")
 
+    required = {
+        "SMTP_SENDER": sender_email,
+        "SMTP_RECEIVER": receiver_email,
+        "SMTP_SERVER": smtp_server,
+        "SMTP_USER": smtp_user,
+        "SMTP_PASS": smtp_pass,
+    }
+    missing = [name for name, val in required.items() if not val]
+    if missing:
+        raise EnvironmentError(
+            "Missing required SMTP environment variables: " + ", ".join(missing)
+        )
+
     msg = MIMEMultipart()
     msg["From"] = sender_email
     msg["To"] = receiver_email

@@ -13,6 +13,7 @@ def filter_existing():
     """Filter out emails that were already contacted."""
     df_receivers = pd.read_excel(INPUT_PATH)
 
+    os.makedirs(CHECKED_DIR, exist_ok=True)
     checked_emails = set()
     for fname in os.listdir(CHECKED_DIR):
         if fname.endswith(".xlsx"):
