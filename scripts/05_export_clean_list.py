@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-ROOT = os.environ.get("MAIL_OTO_HOME", "/opt/mail_oto")
+ROOT = os.environ.get("CLEANMAILER_HOME", "/opt/clean_mailer")
 ACTIVE_MAILS = os.path.join(ROOT, "reports", "aktif_mailler.xlsx")
 BOUNCED = os.path.join(ROOT, "reports", "bounced.xlsx")
 REPLIED = os.path.join(ROOT, "reports", "replied.xlsx")

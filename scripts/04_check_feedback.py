@@ -9,7 +9,7 @@ from email.header import decode_header
 from email.utils import parseaddr
 from imapclient import imap_utf7
 
-ROOT = os.environ.get("MAIL_OTO_HOME", "/opt/mail_oto")
+ROOT = os.environ.get("CLEANMAILER_HOME", "/opt/clean_mailer")
 LOG_DIR = os.path.join(ROOT, "logs")
 SENDERS_FILE = os.path.join(ROOT, "input", "Senders.xlsx")
 BOUNCE_FILE = os.path.join(ROOT, "reports", "bounced.xlsx")
