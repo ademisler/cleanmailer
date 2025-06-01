@@ -107,3 +107,5 @@ with open(COUNTER_FILE, "w") as f:
     json.dump(counters_all, f, indent=2)
 
 print(f"Toplam gönderilen e-posta: {sent_count}")
+
+print("Kod güncellendi - test")
