@@ -6,7 +6,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import pandas as pd
 
-ROOT = os.environ.get("CLEANMAILER_HOME", "/opt/clean_mailer")
+ROOT = os.environ.get("CLEANMAILER_HOME", "/opt/cleanmailer")
 MAIL_LIST_FILE = os.path.join(ROOT, "reports", "aktif_mailler.xlsx")
 SENDERS_FILE = os.path.join(ROOT, "input", "Senders.xlsx")
 TEMPLATE_FILE = os.path.join(ROOT, "templates", "mail_template.txt")
