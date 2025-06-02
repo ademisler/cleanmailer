@@ -4,6 +4,16 @@
 {% endblock %}
 {% block content %}
 <h3 class="mb-4">Dashboard</h3>
+<form method="get" class="mb-3">
+  <div class="input-group" style="max-width:200px;">
+    <select name="range" class="form-select" onchange="this.form.submit()">
+      <option value="all" {% if range_opt=='all' %}selected{% endif %}>All</option>
+      <option value="7" {% if range_opt=='7' %}selected{% endif %}>Last 7 days</option>
+      <option value="30" {% if range_opt=='30' %}selected{% endif %}>Last 30 days</option>
+      <option value="today" {% if range_opt=='today' %}selected{% endif %}>Today</option>
+    </select>
+  </div>
+</form>
 <div class="row mb-4">
   <div class="col-md-4 mb-3">
     <div class="card shadow-sm text-center">
@@ -40,12 +50,24 @@
     </div>
   </div>
   <div class="col-lg-4 mb-4">
-    <div class="card shadow-sm">
+    <div class="card shadow-sm mb-4">
       <div class="card-body">
         <h6 class="card-title">Distribution</h6>
         <canvas id="pieChart" height="120"></canvas>
       </div>
     </div>
+    {% if campaign_stats %}
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h6 class="card-title">Receivers by Campaign</h6>
+        <ul class="list-group list-group-flush">
+          {% for k,v in campaign_stats.items() %}
+          <li class="list-group-item d-flex justify-content-between"><span>{{ k }}</span><span class="badge bg-primary">{{ v }}</span></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
