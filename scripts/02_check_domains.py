@@ -4,7 +4,7 @@ import pandas as pd
 import dns.resolver
 from dns.exception import DNSException
 
-ROOT = os.environ.get("CLEANMAILER_HOME", "/opt/clean_mailer")
+ROOT = os.environ.get("CLEANMAILER_HOME", "/opt/cleanmailer")
 INPUT_FILE = os.path.join(ROOT, "reports", "kontrol_edilmemis.xlsx")
 ACTIVE_OUTPUT = os.path.join(ROOT, "reports", "aktif_mailler.xlsx")
 INACTIVE_OUTPUT = os.path.join(ROOT, "reports", "inactive_domains.xlsx")
