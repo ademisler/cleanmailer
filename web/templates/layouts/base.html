@@ -48,6 +48,7 @@
       <li class="nav-item"><a class="nav-link {% if request.endpoint=='dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}"><i class="bi bi-speedometer2 me-1"></i>{{ _('Overview') }}</a></li>
       <li class="nav-item"><a class="nav-link {% if request.endpoint=='manage_files' %}active{% endif %}" href="{{ url_for('manage_files') }}"><i class="bi bi-folder2-open me-1"></i>{{ _('Manage Files') }}</a></li>
       <li class="nav-item"><a class="nav-link {% if request.endpoint=='view_logs' %}active{% endif %}" href="{{ url_for('view_logs') }}"><i class="bi bi-file-text me-1"></i>{{ _('Logs') }}</a></li>
+      <li class="nav-item"><a class="nav-link {% if request.endpoint=='tasks' %}active{% endif %}" href="{{ url_for('tasks') }}"><i class="bi bi-clock-history me-1"></i>Cron</a></li>
     </ul>
   </div>
   {% endif %}

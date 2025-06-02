@@ -4,6 +4,8 @@ import shutil
 from datetime import datetime, timedelta
 import pandas as pd
 from functools import wraps
+from dotenv import load_dotenv
+import subprocess
 from flask import (
     Flask,
     render_template,
@@ -15,6 +17,8 @@ from flask import (
     send_file,
 )
 
+load_dotenv()
+
 ROOT = os.environ.get("CLEANMAILER_HOME", "/opt/cleanmailer")
 INPUT_DIR = os.path.join(ROOT, "input")
 LOG_DIR = os.path.join(ROOT, "logs")
@@ -25,8 +29,16 @@ SEND_LOG = os.path.join(LOG_DIR, "send.log")
 BOUNCE_FILE = os.path.join(ROOT, "reports", "bounced.xlsx")
 REPLY_FILE = os.path.join(ROOT, "reports", "replied.xlsx")
 
-USERNAME = "admin"
-PASSWORD = "fulexo33@"
+SCRIPT_MAP = {
+    "filter": os.path.join("scripts", "01_filter_existing.py"),
+    "check_domains": os.path.join("scripts", "02_check_domains.py"),
+    "send": os.path.join("scripts", "03_send_mails.py"),
+    "feedback": os.path.join("scripts", "04_check_feedback.py"),
+    "export": os.path.join("scripts", "05_export_clean_list.py"),
+}
+
+USERNAME = os.environ.get("ADMIN_USER", "admin")
+PASSWORD = os.environ.get("ADMIN_PASS", "changeme")
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET", "cleanmailer-secret")
@@ -161,6 +173,14 @@ def load_dataframe(path: str) -> pd.DataFrame:
     if os.path.exists(path):
         return pd.read_excel(path)
     return pd.DataFrame()
+
+
+def list_cron_jobs():
+    """Return list of cron job lines."""
+    result = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
+    if result.returncode != 0:
+        return []
+    return [line for line in result.stdout.splitlines() if line.strip() and not line.strip().startswith("#")]
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -386,6 +406,65 @@ def view_logs():
     else:
         logs = None
     return render_template("pages/logs.html", logs=logs)
+
+
+@app.route("/tasks")
+@login_required
+def tasks():
+    jobs = list_cron_jobs()
+    indexed = list(zip(jobs, range(len(jobs))))
+    return render_template("pages/tasks.html", scripts=SCRIPT_MAP, cron_jobs=indexed)
+
+
+@app.route("/run/<name>", methods=["POST"])
+@login_required
+def run_script(name):
+    script = SCRIPT_MAP.get(name)
+    if not script:
+        flash("Unknown script", "error")
+        return redirect(url_for("tasks"))
+    subprocess.run(["python", script])
+    flash(f"{name} executed")
+    return redirect(url_for("tasks"))
+
+
+@app.route("/cron/add", methods=["POST"])
+@login_required
+def cron_add():
+    sched = request.form.get("schedule")
+    cmd = request.form.get("command")
+    current = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
+    lines = current.stdout.splitlines() if current.returncode == 0 else []
+    lines.append(f"{sched} {cmd}")
+    subprocess.run(["crontab", "-"], input="\n".join(lines) + "\n", text=True)
+    flash("Cron job added")
+    return redirect(url_for("tasks"))
+
+
+@app.route("/cron/delete/<int:index>", methods=["POST"])
+@login_required
+def cron_delete(index):
+    current = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
+    if current.returncode != 0:
+        return redirect(url_for("tasks"))
+    lines = [l for l in current.stdout.splitlines() if l.strip()]
+    non_comments = [i for i, l in enumerate(lines) if not l.strip().startswith("#")]
+    if 0 <= index < len(non_comments):
+        del lines[non_comments[index]]
+        subprocess.run(["crontab", "-"], input="\n".join(lines) + "\n", text=True)
+        flash("Cron job removed")
+    return redirect(url_for("tasks"))
+
+
+@app.route("/cron/trigger/<int:index>", methods=["POST"])
+@login_required
+def cron_trigger(index):
+    jobs = list_cron_jobs()
+    if 0 <= index < len(jobs):
+        cmd = " ".join(jobs[index].split()[5:])
+        subprocess.Popen(cmd, shell=True)
+        flash("Job triggered")
+    return redirect(url_for("tasks"))
 
 
 if __name__ == "__main__":
