@@ -1,6 +1,6 @@
 {% extends 'layouts/base.html' %}
 {% block content %}
-<h3 class="mb-4">Manage Files</h3>
+<h3 class="mb-4">{{ _('Manage Files') }}</h3>
 <div class="row">
   <div class="col-lg-6 mb-4">
     <div class="card h-100">
@@ -17,7 +17,7 @@
       </div>
       <div class="card-body">
         <div class="alert alert-info small">
-          <strong>Expected columns:</strong> email<br>
+          <strong>{{ _('Expected columns:') }}</strong> email<br>
           <div class="mt-2"><pre class="mb-0">email
 john@example.com
 jane@example.com</pre></div>
@@ -27,7 +27,7 @@ jane@example.com</pre></div>
             <input class="form-control" type="file" name="file" required>
             <button class="btn btn-primary" type="submit"><i class="bi bi-upload"></i></button>
           </div>
-          <a href="{{ url_for('download_receivers_example') }}" class="small">Download example</a>
+          <a href="{{ url_for('download_receivers_example') }}" class="small">{{ _('Download example') }}</a>
         </form>
         <form action="{{ url_for('add_receiver') }}" method="post" class="row g-2">
           <div class="col">
@@ -37,7 +37,7 @@ jane@example.com</pre></div>
             <input type="text" name="campaign_id" class="form-control" placeholder="campaign (optional)">
           </div>
           <div class="col-auto">
-            <button class="btn btn-success" type="submit">Add</button>
+            <button class="btn btn-success" type="submit">{{ _('Add') }}</button>
           </div>
         </form>
       </div>
@@ -58,7 +58,7 @@ jane@example.com</pre></div>
       </div>
       <div class="card-body">
         <div class="alert alert-info small">
-          <strong>Expected columns:</strong> Mail, Mdp, IMAP Host, IMAP Port, SMTP Host, SMTP Port, Nom, Günlük Limit
+          <strong>{{ _('Expected columns:') }}</strong> Mail, Mdp, IMAP Host, IMAP Port, SMTP Host, SMTP Port, Nom, Günlük Limit
           <div class="mt-2"><pre class="mb-0">Mail,Mdp,IMAP Host,IMAP Port,SMTP Host,SMTP Port,Nom,Günlük Limit
 liora@example.com,password123,imap.example.com,993,smtp.example.com,465,Liora,75</pre></div>
         </div>
@@ -67,7 +67,7 @@ liora@example.com,password123,imap.example.com,993,smtp.example.com,465,Liora,75
             <input class="form-control" type="file" name="file" required>
             <button class="btn btn-primary" type="submit"><i class="bi bi-upload"></i></button>
           </div>
-          <a href="{{ url_for('download_senders_example') }}" class="small">Download example</a>
+          <a href="{{ url_for('download_senders_example') }}" class="small">{{ _('Download example') }}</a>
         </form>
         <form action="{{ url_for('add_sender') }}" method="post" class="row g-2">
           <div class="col-6">
@@ -95,7 +95,7 @@ liora@example.com,password123,imap.example.com,993,smtp.example.com,465,Liora,75
             <input type="number" name="Günlük Limit" class="form-control" placeholder="Günlük Limit" required>
           </div>
           <div class="col-12">
-            <button class="btn btn-success" type="submit">Add</button>
+            <button class="btn btn-success" type="submit">{{ _('Add') }}</button>
           </div>
         </form>
       </div>

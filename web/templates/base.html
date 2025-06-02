@@ -12,7 +12,7 @@
     <a class="navbar-brand" href="{{ url_for('index') }}">CleanMailer</a>
     {% if session.get('logged_in') %}
     <form class="ms-auto" action="{{ url_for('logout') }}" method="post">
-      <button class="btn btn-outline-light" type="submit">Logout</button>
+      <button class="btn btn-outline-light" type="submit">{{ _('Logout') }}</button>
     </form>
     {% endif %}
   </div>
