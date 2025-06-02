@@ -30,11 +30,11 @@ BOUNCE_FILE = os.path.join(ROOT, "reports", "bounced.xlsx")
 REPLY_FILE = os.path.join(ROOT, "reports", "replied.xlsx")
 
 SCRIPT_MAP = {
-    "filter": os.path.join("scripts", "01_filter_existing.py"),
-    "check_domains": os.path.join("scripts", "02_check_domains.py"),
-    "send": os.path.join("scripts", "03_send_mails.py"),
-    "feedback": os.path.join("scripts", "04_check_feedback.py"),
-    "export": os.path.join("scripts", "05_export_clean_list.py"),
+    "filter": os.environ.get("SCRIPT_PATH_FILTER"),
+    "check_domains": os.environ.get("SCRIPT_PATH_CHECK"),
+    "send": os.environ.get("SCRIPT_PATH_SEND"),
+    "feedback": os.environ.get("SCRIPT_PATH_FEEDBACK"),
+    "export": os.environ.get("SCRIPT_PATH_EXPORT"),
 }
 
 USERNAME = os.environ.get("ADMIN_USER", "admin")
