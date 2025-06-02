@@ -1,0 +1,12 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+<h3 class="mb-4">Send Log</h3>
+{% if log_lines %}
+<pre class="bg-white p-3 border rounded" style="max-height:60vh; overflow:auto;">
+{% for line in log_lines %}{{ line }}
+{% endfor %}
+</pre>
+{% else %}
+<p class="text-muted">No log file found.</p>
+{% endif %}
+{% endblock %}
