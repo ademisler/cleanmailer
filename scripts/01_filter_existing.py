@@ -12,6 +12,13 @@ REPORT_PATH = os.path.join(ROOT, "reports", "kontrol_edilmemis.xlsx")
 def filter_existing():
     """Filter out emails that were already contacted."""
     df_receivers = pd.read_excel(INPUT_PATH)
+    df_receivers.columns = df_receivers.columns.str.strip()
+
+    if "Mail" in df_receivers.columns:
+        df_receivers = df_receivers.drop_duplicates(subset="Mail")
+        df_receivers.rename(columns={"Mail": "email"}, inplace=True)
+    else:
+        df_receivers = df_receivers.drop_duplicates(subset="email")
 
     os.makedirs(CHECKED_DIR, exist_ok=True)
     checked_emails = set()
