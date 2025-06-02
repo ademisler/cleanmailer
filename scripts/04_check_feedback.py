@@ -108,10 +108,13 @@ def main():
                                         real_target = "UNKNOWN"
                                     all_bounced.append({"email": real_target, "subject": subject})
 
-                                elif "auto-reply" in subject.lower():
-                                    continue
-                                else:
-                                    all_replied.append({"email": real_email, "subject": subject})
+elif "auto-reply" in subject.lower():
+    continue
+elif "re:" in subject.lower() or "reply" in subject.lower():
+    all_replied.append({"email": real_email, "subject": subject})
+else:
+    logging.info("Mail REPLY olarak işlenmedi: From=%s | Subject=%s", real_email, subject)
+
 
                 except Exception as e:
                     logging.warning("%s klasör işlenemedi (%s): %s", imap_user, folder_name, e)
