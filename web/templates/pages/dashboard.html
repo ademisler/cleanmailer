@@ -1,0 +1,62 @@
+{% extends 'layouts/base.html' %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+<h3 class="mb-4">Dashboard</h3>
+<div class="row mb-4">
+  <div class="col-md-4 mb-3">
+    <div class="card shadow-sm text-center">
+      <div class="card-body">
+        <h6 class="card-title">Total Sent Emails</h6>
+        <p class="display-6">{{ sent_count }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 mb-3">
+    <div class="card shadow-sm text-center">
+      <div class="card-body">
+        <h6 class="card-title">Total Bounced</h6>
+        <p class="display-6">{{ bounce_count }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 mb-3">
+    <div class="card shadow-sm text-center">
+      <div class="card-body">
+        <h6 class="card-title">Total Replies</h6>
+        <p class="display-6">{{ reply_count }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-8 mb-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h6 class="card-title">Emails Sent Over Time</h6>
+        <canvas id="lineChart" height="120"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4 mb-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h6 class="card-title">Distribution</h6>
+        <canvas id="pieChart" height="120"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const lineCtx = document.getElementById('lineChart');
+const pieCtx = document.getElementById('pieChart');
+const lineData = {{ line_data|tojson }};
+const lineLabels = Object.keys(lineData);
+const lineValues = Object.values(lineData);
+new Chart(lineCtx, {type: 'line', data: {labels: lineLabels, datasets: [{label:'Sent', data: lineValues, borderColor:'#0d6efd', tension:0.3}]}});
+new Chart(pieCtx, {type: 'pie', data: {labels:['Sent','Bounced','Replied'], datasets: [{data:[{{ sent_count }}, {{ bounce_count }}, {{ reply_count }}], backgroundColor:['#0d6efd','#dc3545','#198754']}]}});
+</script>
+{% endblock %}
