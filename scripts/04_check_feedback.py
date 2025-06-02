@@ -16,13 +16,13 @@ BOUNCE_FILE = os.path.join(ROOT, "reports", "bounced.xlsx")
 REPLY_FILE = os.path.join(ROOT, "reports", "replied.xlsx")
 
 def main():
+    os.makedirs(LOG_DIR, exist_ok=True)
+
     logging.basicConfig(
         filename=os.path.join(LOG_DIR, "feedback.log"),
         level=logging.INFO,
         format="%(asctime)s %(levelname)s: %(message)s",
     )
-
-    os.makedirs(LOG_DIR, exist_ok=True)
 
     all_bounced = []
     all_replied = []
@@ -106,14 +106,19 @@ def main():
                                                 continue
                                     if not real_target:
                                         real_target = "UNKNOWN"
+
                                     all_bounced.append({"email": real_target, "subject": subject})
 
-elif "auto-reply" in subject.lower():
-    continue
-elif "re:" in subject.lower() or "reply" in subject.lower():
-    all_replied.append({"email": real_email, "subject": subject})
-else:
-    logging.info("Mail REPLY olarak işlenmedi: From=%s | Subject=%s", real_email, subject)
+                                elif "auto-reply" in subject.lower():
+                                    continue
+                                elif "re:" in subject.lower() or "reply" in subject.lower():
+                                    all_replied.append({"email": real_email, "subject": subject})
+                                else:
+                                    logging.info(
+                                        "Mail REPLY olarak işlenmedi: From=%s | Subject=%s",
+                                        real_email,
+                                        subject,
+                                    )
 
 
                 except Exception as e:
