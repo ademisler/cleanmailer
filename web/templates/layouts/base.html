@@ -23,9 +23,19 @@
     <a class="navbar-brand" href="{{ url_for('dashboard') }}">CleanMailer</a>
     {% if session.get('logged_in') %}
     <div class="d-flex align-items-center">
+      <div class="dropdown me-2">
+        <a class="btn btn-outline-light btn-sm dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          {{ lang.upper() }}
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end">
+          {% for code, name in languages.items() %}
+          <li><a class="dropdown-item {% if code==lang %}active{% endif %}" href="{{ url_for('set_language', lang=code) }}">{{ name }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
       <span class="me-3"><i class="bi bi-person-circle"></i></span>
       <form action="{{ url_for('logout') }}" method="post" class="mb-0">
-        <button class="btn btn-outline-light btn-sm">Logout</button>
+        <button class="btn btn-outline-light btn-sm">{{ _('Logout') }}</button>
       </form>
     </div>
     {% endif %}
@@ -35,9 +45,9 @@
   {% if session.get('logged_in') %}
   <div class="bg-light border-end sidebar p-3">
     <ul class="nav nav-pills flex-column">
-      <li class="nav-item"><a class="nav-link {% if request.endpoint=='dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}"><i class="bi bi-speedometer2 me-1"></i>Overview</a></li>
-      <li class="nav-item"><a class="nav-link {% if request.endpoint=='manage_files' %}active{% endif %}" href="{{ url_for('manage_files') }}"><i class="bi bi-folder2-open me-1"></i>Manage Files</a></li>
-      <li class="nav-item"><a class="nav-link {% if request.endpoint=='view_logs' %}active{% endif %}" href="{{ url_for('view_logs') }}"><i class="bi bi-file-text me-1"></i>Logs</a></li>
+      <li class="nav-item"><a class="nav-link {% if request.endpoint=='dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}"><i class="bi bi-speedometer2 me-1"></i>{{ _('Overview') }}</a></li>
+      <li class="nav-item"><a class="nav-link {% if request.endpoint=='manage_files' %}active{% endif %}" href="{{ url_for('manage_files') }}"><i class="bi bi-folder2-open me-1"></i>{{ _('Manage Files') }}</a></li>
+      <li class="nav-item"><a class="nav-link {% if request.endpoint=='view_logs' %}active{% endif %}" href="{{ url_for('view_logs') }}"><i class="bi bi-file-text me-1"></i>{{ _('Logs') }}</a></li>
     </ul>
   </div>
   {% endif %}

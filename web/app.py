@@ -33,6 +33,86 @@ app.secret_key = os.environ.get("FLASK_SECRET", "cleanmailer-secret")
 
 os.makedirs(BACKUP_DIR, exist_ok=True)
 
+# --- Minimal i18n setup ---
+LANGUAGES = {"en": "English", "tr": "Türkçe"}
+
+TRANSLATIONS = {
+    "tr": {
+        "Logout": "Çıkış",
+        "Overview": "Genel Bakış",
+        "Manage Files": "Dosyaları Yönet",
+        "Logs": "Kayıtlar",
+        "Dashboard": "Kontrol Paneli",
+        "CleanMailer Login": "CleanMailer Giriş",
+        "Username": "Kullanıcı Adı",
+        "Password": "Şifre",
+        "Login": "Giriş",
+        "All": "Tümü",
+        "Last 7 days": "Son 7 Gün",
+        "Last 30 days": "Son 30 Gün",
+        "Today": "Bugün",
+        "Total Sent Emails": "Gönderilen E-posta Sayısı",
+        "Total Bounced": "Geri Dönen Toplam",
+        "Total Replies": "Yanıtlanan Toplam",
+        "Emails Sent Over Time": "Zaman İçinde Gönderilen E-postalar",
+        "Distribution": "Dağılım",
+        "Receivers by Campaign": "Kampanyaya Göre Alıcılar",
+        "Expected columns:": "Beklenen sütunlar:",
+        "Download example": "Örnek indir",
+        "Add": "Ekle",
+        "Preview Upload": "Yükleme Önizleme",
+        "Confirm Upload": "Yüklemeyi Onayla",
+        "Cancel": "İptal",
+        "Send Log": "Gönderim Günlüğü",
+        "No log file found.": "Günlük dosyası bulunamadı.",
+        "Logged in successfully.": "Başarıyla giriş yapıldı.",
+        "Invalid credentials": "Geçersiz kimlik bilgileri",
+        "Logged out": "Çıkış yapıldı",
+        "No file provided": "Dosya sağlanmadı",
+        "Unsupported file type": "Desteklenmeyen dosya türü",
+        "Invalid file headers": "Geçersiz dosya başlıkları",
+        "No pending upload": "Bekleyen yükleme yok",
+        "File uploaded": "Dosya yüklendi",
+        "File deleted": "Dosya silindi",
+        "Sender added": "Gönderen eklendi",
+        "Receiver added": "Alıcı eklendi",
+        "Email required": "E-posta gerekli",
+        "This email already exists in the list.": "Bu e-posta listede zaten var.",
+        "All sender fields required": "Tüm gönderen alanları gerekli",
+        "Skipped {count} duplicate emails.": "{count} kopya e-posta atlandı.",
+        "Sent": "Gönderildi",
+        "Bounced": "Geri Döndü",
+        "Replied": "Yanıtlandı",
+    }
+}
+
+
+def translate(text: str, **kwargs) -> str:
+    lang = session.get("lang", "en")
+    translated = TRANSLATIONS.get(lang, {}).get(text, text)
+    if kwargs:
+        try:
+            translated = translated.format(**kwargs)
+        except Exception:
+            pass
+    return translated
+
+
+@app.context_processor
+def inject_translator():
+    return {
+        "_": translate,
+        "lang": session.get("lang", "en"),
+        "languages": LANGUAGES,
+    }
+
+
+@app.route("/lang/<lang>")
+def set_language(lang: str):
+    if lang in LANGUAGES:
+        session["lang"] = lang
+    return redirect(request.referrer or url_for("dashboard"))
+
 
 @app.template_filter("basename")
 def basename_filter(value):
@@ -88,9 +168,9 @@ def login():
     if request.method == "POST":
         if request.form.get("username") == USERNAME and request.form.get("password") == PASSWORD:
             session["logged_in"] = True
-            flash("Logged in successfully.")
+            flash(translate("Logged in successfully."))
             return redirect(url_for("dashboard"))
-        flash("Invalid credentials", "error")
+        flash(translate("Invalid credentials"), "error")
     return render_template("pages/login.html")
 
 
@@ -98,7 +178,7 @@ def login():
 @login_required
 def logout():
     session.clear()
-    flash("Logged out")
+    flash(translate("Logged out"))
     return redirect(url_for("login"))
 
 
@@ -183,12 +263,12 @@ def download_senders_example():
 def upload_file(name):
     uploaded = request.files.get("file")
     if not uploaded:
-        flash("No file provided")
+        flash(translate("No file provided"))
         return redirect(url_for("manage_files"))
 
     ext = os.path.splitext(uploaded.filename)[1].lower()
     if ext not in [".csv", ".xlsx", ".xls"]:
-        flash("Unsupported file type")
+        flash(translate("Unsupported file type"))
         return redirect(url_for("manage_files"))
 
     if ext == ".csv":
@@ -207,7 +287,7 @@ def upload_file(name):
         "Günlük Limit",
     }
     if not required_columns.issubset(df.columns):
-        flash("Invalid file headers", "error")
+        flash(translate("Invalid file headers"), "error")
         return redirect(url_for("manage_files"))
 
     session[f"pending_{name}"] = df.to_json(orient="split")
@@ -223,7 +303,7 @@ def upload_file(name):
 def confirm_upload(name):
     data = session.pop(f"pending_{name}", None)
     if not data:
-        flash("No pending upload")
+        flash(translate("No pending upload"))
         return redirect(url_for("manage_files"))
     df = pd.read_json(data, orient="split")
     dest = RECEIVERS_PATH if name == "receivers" else SENDERS_PATH
@@ -234,10 +314,10 @@ def confirm_upload(name):
         combined = combined.drop_duplicates(subset=["email"], keep="first")
         df = combined
         if dup_count:
-            flash(f"Skipped {dup_count} duplicate emails.")
+            flash(translate("Skipped {count} duplicate emails.", count=dup_count))
     backup_file(dest)
     df.to_excel(dest, index=False)
-    flash("File uploaded")
+    flash(translate("File uploaded"))
     return redirect(url_for("manage_files"))
 
 
@@ -247,11 +327,11 @@ def add_receiver():
     email = request.form.get("email")
     campaign = request.form.get("campaign_id")
     if not email:
-        flash("Email required")
+        flash(translate("Email required"))
         return redirect(url_for("manage_files"))
     df = load_dataframe(RECEIVERS_PATH)
     if "email" in df.columns and email in df["email"].values:
-        flash("This email already exists in the list.")
+        flash(translate("This email already exists in the list."))
         return redirect(url_for("manage_files"))
     new = {"email": email}
     if campaign:
@@ -261,7 +341,7 @@ def add_receiver():
     df = pd.concat([df, pd.DataFrame([new])], ignore_index=True)
     backup_file(RECEIVERS_PATH)
     df.to_excel(RECEIVERS_PATH, index=False)
-    flash("Receiver added")
+    flash(translate("Receiver added"))
     return redirect(url_for("manage_files"))
 
 
@@ -271,13 +351,13 @@ def add_sender():
     cols = ["Mail", "Mdp", "IMAP Host", "IMAP Port", "SMTP Host", "SMTP Port", "Nom", "Günlük Limit"]
     data = {c: request.form.get(c) for c in cols}
     if not all(data.values()):
-        flash("All sender fields required")
+        flash(translate("All sender fields required"))
         return redirect(url_for("manage_files"))
     df = load_dataframe(SENDERS_PATH)
     df = pd.concat([df, pd.DataFrame([data])], ignore_index=True)
     backup_file(SENDERS_PATH)
     df.to_excel(SENDERS_PATH, index=False)
-    flash("Sender added")
+    flash(translate("Sender added"))
     return redirect(url_for("manage_files"))
 
 
@@ -287,7 +367,7 @@ def delete_file(name):
     dest = RECEIVERS_PATH if name == "receivers" else SENDERS_PATH
     if os.path.exists(dest):
         os.remove(dest)
-        flash("File deleted")
+        flash(translate("File deleted"))
     return redirect(url_for("manage_files"))
 
 
