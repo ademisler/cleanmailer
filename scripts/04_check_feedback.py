@@ -81,16 +81,21 @@ def main():
                 try:
                     decoded_name = imap_utf7.decode(folder_name)
                 except Exception:
-                    decoded_name = folder_name  # hata varsa decode etme
+                    decoded_name = folder_name
 
                 folder_norm = normalize(decoded_name)
 
-                # İsteğe bağlı klasör filtreleme:
+                # Klasör filtreleme geçici olarak devre dışı
                 # keywords = ["inbox", "spam", "junk", "trash", "replies", "reply", "sent", "posta", "gelenler", "yanit"]
                 # if not any(k in folder_norm for k in keywords):
                 #     continue
 
-                utf7_folder = imap_utf7.encode(decoded_name)
+                try:
+                    utf7_folder = imap_utf7.encode(decoded_name)
+                except Exception:
+                    utf7_folder = decoded_name  # encode hatası varsa orijinali kullan
+
+                logger.debug("Trying folder: %s (UTF7: %s)", decoded_name, utf7_folder)
 
                 try:
                     status, _ = mail.select(utf7_folder)
