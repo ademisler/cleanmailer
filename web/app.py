@@ -1,6 +1,7 @@
 import os
 import re
 import shutil
+import json
 from datetime import datetime, timedelta
 import pandas as pd
 from functools import wraps
@@ -105,6 +106,8 @@ TRANSLATIONS = {
         "Cron job added": "Cron görevi eklendi",
         "Cron job removed": "Cron görevi kaldırıldı",
         "Job triggered": "Görev tetiklendi",
+        "SMTP Limits": "SMTP Limitleri",
+        "Remaining Limit": "Kalan Limit",
     }
 }
 
@@ -185,6 +188,44 @@ def load_dataframe(path: str) -> pd.DataFrame:
     return pd.DataFrame()
 
 
+def load_daily_counter(day: str | None = None) -> dict:
+    """Return counters for the given day (default today)."""
+    if day is None:
+        day = datetime.now().strftime("%Y-%m-%d")
+    counter_path = os.path.join(LOG_DIR, "daily_counter.json")
+    if not os.path.exists(counter_path):
+        return {}
+    try:
+        with open(counter_path, "r", encoding="utf-8") as f:
+            all_data = json.load(f)
+    except Exception:
+        return {}
+    return all_data.get(day, {})
+
+
+def get_smtp_limits() -> list[dict]:
+    """Return remaining daily quotas for each SMTP account."""
+    df = load_dataframe(SENDERS_PATH)
+    if df.empty:
+        return []
+    df.columns = df.columns.str.strip()
+    counters = load_daily_counter()
+    limits = []
+    for _, row in df.iterrows():
+        email = row.get("Mail")
+        limit = row.get("Günlük Limit")
+        if email is None or limit is None:
+            continue
+        try:
+            limit = int(limit)
+        except Exception:
+            continue
+        used = int(counters.get(email, 0))
+        remaining = max(limit - used, 0)
+        limits.append({"email": email, "remaining": remaining, "limit": limit})
+    return limits
+
+
 def list_cron_jobs():
     """Return list of cron job lines."""
     result = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
@@ -247,6 +288,8 @@ def dashboard():
         if "campaign_id" in df_recv.columns:
             campaign_stats = df_recv["campaign_id"].value_counts().to_dict()
 
+    smtp_limits = get_smtp_limits()
+
     return render_template(
         "pages/dashboard.html",
         sent_count=sent_total,
@@ -255,6 +298,7 @@ def dashboard():
         line_data=per_day,
         range_opt=range_opt,
         campaign_stats=campaign_stats,
+        smtp_limits=smtp_limits,
     )
 
 
