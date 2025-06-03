@@ -433,10 +433,14 @@ def run_script(name):
 @login_required
 def cron_add():
     sched = request.form.get("schedule")
-    cmd = request.form.get("command")
+    key = request.form.get("script")
+    script = SCRIPT_MAP.get(key)
+    if not script:
+        flash("Unknown script", "error")
+        return redirect(url_for("tasks"))
     current = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
     lines = current.stdout.splitlines() if current.returncode == 0 else []
-    lines.append(f"{sched} {cmd}")
+    lines.append(f"{sched} python {script}")
     subprocess.run(["crontab", "-"], input="\n".join(lines) + "\n", text=True)
     flash("Cron job added")
     return redirect(url_for("tasks"))

@@ -39,8 +39,18 @@
 <p class="text-muted">No cron jobs configured.</p>
 {% endif %}
 <form method="post" action="{{ url_for('cron_add') }}" class="row g-2 mt-3">
-  <div class="col-5"><input name="schedule" class="form-control" placeholder="* * * * *" required></div>
-  <div class="col-5"><input name="command" class="form-control" placeholder="command" required></div>
-  <div class="col"><button class="btn btn-success" type="submit">Add</button></div>
+  <div class="col-5">
+    <input name="schedule" class="form-control" placeholder="* * * * *" required>
+  </div>
+  <div class="col-5">
+    <select name="script" class="form-select" required>
+      {% for name in scripts.keys() %}
+        <option value="{{ name }}">{{ name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col">
+    <button class="btn btn-success" type="submit">Add</button>
+  </div>
 </form>
 {% endblock %}
