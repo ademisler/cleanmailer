@@ -26,11 +26,25 @@ def normalize(text: str) -> str:
     text = text.replace(".", "").replace(" ", "")
     return text
 
+
+def decode_mime_words(text: str) -> str:
+    """Decode a MIME encoded string into unicode."""
+    try:
+        decoded = decode_header(text)
+        return "".join(
+            str(part[0], part[1] or "utf-8") if isinstance(part[0], bytes) else str(part[0])
+            for part in decoded
+        )
+    except Exception:
+        return text
+
 LOG_FILE = os.path.join(LOG_DIR, "feedback.log")
 
 
 def main():
     os.makedirs(LOG_DIR, exist_ok=True)
+    os.makedirs(os.path.dirname(BOUNCE_FILE), exist_ok=True)
+    os.makedirs(os.path.dirname(REPLY_FILE), exist_ok=True)
 
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
@@ -72,7 +86,8 @@ def main():
                     continue
 
                 folder_name = match.group(1)
-                folder_norm = normalize(folder_name)
+                decoded_name = imap_utf7.decode(folder_name)
+                folder_norm = normalize(decoded_name)
 
                 keywords = [
                     "inbox",
@@ -90,30 +105,30 @@ def main():
                 if not any(k in folder_norm for k in keywords):
                     continue
 
-                utf7_folder = imap_utf7.encode(folder_name)
+                utf7_folder = imap_utf7.encode(decoded_name)
 
                 try:
                     status, _ = mail.select(utf7_folder)
                     if status != "OK":
-                        logger.info("%s klasör atlandı (%s)", imap_user, folder_name)
+                        logger.info("%s klasör atlandı (%s)", imap_user, decoded_name)
                         continue
 
                     status, messages = mail.search(None, "ALL")
                     mail_ids = messages[0].split()
-                    logger.debug("%s klasör: %s -> %d", imap_user, folder_name, len(mail_ids))
+                    logger.debug("%s klasör: %s -> %d", imap_user, decoded_name, len(mail_ids))
 
                     for num in mail_ids[::-1]:
                         status, msg_data = mail.fetch(num, "(RFC822)")
                         if status != "OK":
-                            logger.warning("Fetch failed for %s msg %s: %s", folder_name, num, status)
+                            logger.warning("Fetch failed for %s msg %s: %s", decoded_name, num, status)
                             continue
                         logger.debug("fetch result (%s): %s", num, status)
                         for response_part in msg_data:
-                            if isinstance(response_part, tuple):
+                            if not isinstance(response_part, tuple):
+                                continue
+                            try:
                                 msg = email.message_from_bytes(response_part[1])
-                                subject, encoding = decode_header(msg["Subject"])[0]
-                                if isinstance(subject, bytes):
-                                    subject = subject.decode(encoding or "utf-8", errors="ignore")
+                                subject = decode_mime_words(msg.get("Subject", ""))
 
                                 from_email = msg.get("From", "")
                                 real_email = parseaddr(from_email)[1]
@@ -138,11 +153,12 @@ def main():
                                                                 real_target = line.split(":")[-1].strip()
                                                                 break
                                             except Exception as e:
-                                                logger.exception("Payload decode failed for %s msg %s: %s", folder_name, num, e)
+                                                logger.exception("Payload decode failed for %s msg %s: %s", decoded_name, num, e)
                                                 continue
                                     if not real_target:
                                         real_target = "UNKNOWN"
 
+                                    logger.info("Bounced detected: %s | Subject=%s", real_target, subject)
                                     all_bounced.append({"email": real_target, "subject": subject})
 
                                 elif "auto-reply" in subject.lower():
@@ -152,6 +168,7 @@ def main():
                                     or "reply" in subject.lower()
                                     or msg.get("In-Reply-To")
                                 ):
+                                    logger.info("Reply detected: %s | Subject=%s", real_email, subject)
                                     all_replied.append({"email": real_email, "subject": subject})
                                 else:
                                     logger.info(
@@ -159,10 +176,18 @@ def main():
                                         real_email,
                                         subject,
                                     )
+                            except Exception as e:
+                                logger.exception(
+                                    "Message parsing failed for %s msg %s: %s",
+                                    decoded_name,
+                                    num,
+                                    e,
+                                )
+                                continue
 
 
                 except Exception as e:
-                    logger.warning("%s klasör işlenemedi (%s): %s", imap_user, folder_name, e)
+                    logger.warning("%s klasör işlenemedi (%s): %s", imap_user, decoded_name, e)
 
             mail.logout()
 
