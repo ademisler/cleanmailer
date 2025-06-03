@@ -71,14 +71,15 @@ def main():
             _, folders = mail.list()
 
             for folder in folders:
-                decoded = folder.decode()
-                match = re.search(r'".*" "(.*)"', decoded)
-                if not match:
+                parts = folder.split()
+                if len(parts) < 3:
+                    continue
+                try:
+                    folder_name = parts[-1].strip(b'"').decode("utf-8", errors="ignore")
+                except Exception:
                     continue
 
-                folder_name = match.group(1)
                 folder_norm = normalize(folder_name)
-
                 logger.info("Denenen klasör: %s", folder_name)
 
                 try:
