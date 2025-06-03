@@ -26,14 +26,22 @@ def normalize(text: str) -> str:
     text = text.replace(".", "").replace(" ", "")
     return text
 
+LOG_FILE = os.path.join(LOG_DIR, "feedback.log")
+
+
 def main():
     os.makedirs(LOG_DIR, exist_ok=True)
 
-    logging.basicConfig(
-        filename=os.path.join(LOG_DIR, "feedback.log"),
-        level=logging.INFO,
-        format="%(asctime)s %(levelname)s: %(message)s",
-    )
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
+
+    if not any(isinstance(h, logging.FileHandler) and h.baseFilename == LOG_FILE for h in logger.handlers):
+        handler = logging.FileHandler(LOG_FILE, mode="a", encoding="utf-8")
+        handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s: %(message)s"))
+        logger.addHandler(handler)
+
+    logger.info("Feedback check started")
 
     all_bounced = []
     all_replied = []
@@ -48,7 +56,7 @@ def main():
         imap_pass = row.get("Mdp")
 
         if not all([imap_host, imap_user, imap_pass]):
-            logging.warning("Eksik IMAP bilgisi: %s", imap_user)
+            logger.warning("Eksik IMAP bilgisi: %s", imap_user)
             continue
 
         try:
@@ -87,16 +95,19 @@ def main():
                 try:
                     status, _ = mail.select(utf7_folder)
                     if status != "OK":
-                        logging.info("%s klasör atlandı (%s)", imap_user, folder_name)
+                        logger.info("%s klasör atlandı (%s)", imap_user, folder_name)
                         continue
 
                     status, messages = mail.search(None, "ALL")
                     mail_ids = messages[0].split()
-                    logging.debug("%s klasör: %s -> %d", imap_user, folder_name, len(mail_ids))
+                    logger.debug("%s klasör: %s -> %d", imap_user, folder_name, len(mail_ids))
 
                     for num in mail_ids[::-1]:
                         status, msg_data = mail.fetch(num, "(RFC822)")
-                        logging.debug("fetch result (%s): %s", num, status)
+                        if status != "OK":
+                            logger.warning("Fetch failed for %s msg %s: %s", folder_name, num, status)
+                            continue
+                        logger.debug("fetch result (%s): %s", num, status)
                         for response_part in msg_data:
                             if isinstance(response_part, tuple):
                                 msg = email.message_from_bytes(response_part[1])
@@ -126,7 +137,8 @@ def main():
                                                             if line.lower().startswith("to:"):
                                                                 real_target = line.split(":")[-1].strip()
                                                                 break
-                                            except Exception:
+                                            except Exception as e:
+                                                logger.exception("Payload decode failed for %s msg %s: %s", folder_name, num, e)
                                                 continue
                                     if not real_target:
                                         real_target = "UNKNOWN"
@@ -135,10 +147,14 @@ def main():
 
                                 elif "auto-reply" in subject.lower():
                                     continue
-                                elif "re:" in subject.lower() or "reply" in subject.lower():
+                                elif (
+                                    "re:" in subject.lower()
+                                    or "reply" in subject.lower()
+                                    or msg.get("In-Reply-To")
+                                ):
                                     all_replied.append({"email": real_email, "subject": subject})
                                 else:
-                                    logging.info(
+                                    logger.info(
                                         "Mail REPLY olarak işlenmedi: From=%s | Subject=%s",
                                         real_email,
                                         subject,
@@ -146,12 +162,12 @@ def main():
 
 
                 except Exception as e:
-                    logging.warning("%s klasör işlenemedi (%s): %s", imap_user, folder_name, e)
+                    logger.warning("%s klasör işlenemedi (%s): %s", imap_user, folder_name, e)
 
             mail.logout()
 
         except Exception as e:
-            logging.error("IMAP erişimi başarısız (%s): %s", imap_user, e)
+            logger.error("IMAP erişimi başarısız (%s): %s", imap_user, e)
 
     if all_bounced:
         pd.DataFrame(all_bounced).to_excel(BOUNCE_FILE, index=False)
@@ -159,6 +175,11 @@ def main():
     if all_replied:
         pd.DataFrame(all_replied).to_excel(REPLY_FILE, index=False)
 
+    logger.info(
+        "Script completed. Bounced: %d, Replied: %d",
+        len(all_bounced),
+        len(all_replied),
+    )
     print(f"Toplam bounced: {len(all_bounced)} | replied: {len(all_replied)}")
 
 
