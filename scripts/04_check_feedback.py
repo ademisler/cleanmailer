@@ -8,12 +8,23 @@ import pandas as pd
 from email.header import decode_header
 from email.utils import parseaddr
 from imapclient import imap_utf7
+import unicodedata
 
 ROOT = os.environ.get("CLEANMAILER_HOME", "/opt/cleanmailer")
 LOG_DIR = os.path.join(ROOT, "logs")
 SENDERS_FILE = os.path.join(ROOT, "input", "Senders.xlsx")
 BOUNCE_FILE = os.path.join(ROOT, "reports", "bounced.xlsx")
 REPLY_FILE = os.path.join(ROOT, "reports", "replied.xlsx")
+
+
+def normalize(text: str) -> str:
+    """Return a normalized folder name for comparison."""
+    if not text:
+        return ""
+    text = unicodedata.normalize("NFKD", text)
+    text = text.lower()
+    text = text.replace(".", "").replace(" ", "")
+    return text
 
 def main():
     os.makedirs(LOG_DIR, exist_ok=True)
@@ -53,9 +64,22 @@ def main():
                     continue
 
                 folder_name = match.group(1)
-                folder_key = folder_name.lower()
+                folder_norm = normalize(folder_name)
 
-                if not any(k in folder_key for k in ["inbox", "spam", "junk", "trash"]):
+                keywords = [
+                    "inbox",
+                    "spam",
+                    "junk",
+                    "trash",
+                    "replies",
+                    "reply",
+                    "sent",
+                    "posta",
+                    "gelenler",
+                    "yanit",
+                ]
+
+                if not any(k in folder_norm for k in keywords):
                     continue
 
                 utf7_folder = imap_utf7.encode(folder_name)
