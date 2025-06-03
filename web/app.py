@@ -96,6 +96,15 @@ TRANSLATIONS = {
         "Sent": "Gönderildi",
         "Bounced": "Geri Döndü",
         "Replied": "Yanıtlandı",
+        "Automation": "Otomasyon",
+        "Scripts": "Betikler",
+        "Run": "Çalıştır",
+        "Cron Jobs": "Zamanlanmış Görevler",
+        "Delete": "Sil",
+        "No cron jobs configured.": "Tanımlı cron görevi yok.",
+        "Cron job added": "Cron görevi eklendi",
+        "Cron job removed": "Cron görevi kaldırıldı",
+        "Job triggered": "Görev tetiklendi",
     }
 }
 
@@ -442,7 +451,7 @@ def cron_add():
     lines = current.stdout.splitlines() if current.returncode == 0 else []
     lines.append(f"{sched} python {script}")
     subprocess.run(["crontab", "-"], input="\n".join(lines) + "\n", text=True)
-    flash("Cron job added")
+    flash(translate("Cron job added"))
     return redirect(url_for("tasks"))
 
 
@@ -457,7 +466,7 @@ def cron_delete(index):
     if 0 <= index < len(non_comments):
         del lines[non_comments[index]]
         subprocess.run(["crontab", "-"], input="\n".join(lines) + "\n", text=True)
-        flash("Cron job removed")
+        flash(translate("Cron job removed"))
     return redirect(url_for("tasks"))
 
 
@@ -468,7 +477,7 @@ def cron_trigger(index):
     if 0 <= index < len(jobs):
         cmd = " ".join(jobs[index].split()[5:])
         subprocess.Popen(cmd, shell=True)
-        flash("Job triggered")
+        flash(translate("Job triggered"))
     return redirect(url_for("tasks"))
 
 
