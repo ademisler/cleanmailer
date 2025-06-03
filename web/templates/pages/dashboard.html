@@ -68,6 +68,25 @@
       </div>
     </div>
     {% endif %}
+    {% if smtp_limits %}
+    <div class="card shadow-sm mt-4">
+      <div class="card-body">
+        <h6 class="card-title">{{ _('SMTP Limits') }}</h6>
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered mb-0">
+            <thead>
+              <tr><th>Email</th><th>{{ _('Remaining Limit') }}</th></tr>
+            </thead>
+            <tbody>
+              {% for row in smtp_limits %}
+              <tr><td>{{ row.email }}</td><td>{{ row.remaining }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
