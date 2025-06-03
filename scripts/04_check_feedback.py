@@ -87,8 +87,9 @@ def main():
                     "posta", "gelenler", "yanit"
                 ]
 
-                if not any(k in folder_norm for k in keywords):
-                    continue  # test amaçlı yorum satırı yapabilirsin
+                # if not any(k in folder_norm for k in keywords):
+                #     continue
+
 
                 utf7_folder = imap_utf7.encode(decoded_name)
 
