@@ -61,6 +61,15 @@ def main():
                         help="Email body")
     parser.add_argument("attachments", nargs="*", help="Files to attach")
     args = parser.parse_args()
+
+    # If no attachments are given explicitly, attach the default report if it exists
+    if not args.attachments:
+        default_path = "/opt/cleanmailer/reports/temiz_liste_final.xlsx"
+        if os.path.exists(default_path):
+            args.attachments = [default_path]
+        else:
+            args.attachments = []
+
     send_report(args.subject, args.body, args.attachments)
 
 
