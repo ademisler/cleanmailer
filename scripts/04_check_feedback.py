@@ -6,7 +6,6 @@ import email
 import pandas as pd
 from email.header import decode_header
 from email.utils import parseaddr
-from imapclient import imap_utf7
 import unicodedata
 
 ROOT = os.environ.get("CLEANMAILER_HOME", "/opt/cleanmailer")
@@ -78,39 +77,24 @@ def main():
                     continue
 
                 folder_name = match.group(1)
-                try:
-                    decoded_name = imap_utf7.decode(folder_name)
-                except Exception:
-                    decoded_name = folder_name
+                folder_norm = normalize(folder_name)
 
-                folder_norm = normalize(decoded_name)
-
-                # Klasör filtreleme geçici olarak devre dışı
-                # keywords = ["inbox", "spam", "junk", "trash", "replies", "reply", "sent", "posta", "gelenler", "yanit"]
-                # if not any(k in folder_norm for k in keywords):
-                #     continue
+                logger.info("Denenen klasör: %s", folder_name)
 
                 try:
-                    utf7_folder = imap_utf7.encode(decoded_name)
-                except Exception:
-                    utf7_folder = decoded_name  # encode hatası varsa orijinali kullan
-
-                logger.debug("Trying folder: %s (UTF7: %s)", decoded_name, utf7_folder)
-
-                try:
-                    status, _ = mail.select(utf7_folder)
+                    status, _ = mail.select(folder_name)
                     if status != "OK":
-                        logger.info("%s klasör atlandı (%s)", imap_user, decoded_name)
+                        logger.info("%s klasör atlandı (%s)", imap_user, folder_name)
                         continue
 
                     status, messages = mail.search(None, "ALL")
                     mail_ids = messages[0].split()
-                    logger.debug("%s klasör: %s -> %d", imap_user, decoded_name, len(mail_ids))
+                    logger.debug("%s klasör: %s -> %d", imap_user, folder_name, len(mail_ids))
 
                     for num in mail_ids[::-1]:
                         status, msg_data = mail.fetch(num, "(RFC822)")
                         if status != "OK":
-                            logger.warning("Fetch failed for %s msg %s: %s", decoded_name, num, status)
+                            logger.warning("Fetch failed for %s msg %s: %s", folder_name, num, status)
                             continue
                         for response_part in msg_data:
                             if not isinstance(response_part, tuple):
@@ -141,7 +125,7 @@ def main():
                                                                 real_target = line.split(":")[-1].strip()
                                                                 break
                                             except Exception as e:
-                                                logger.exception("Payload decode failed for %s msg %s: %s", decoded_name, num, e)
+                                                logger.exception("Payload decode failed for %s msg %s: %s", folder_name, num, e)
                                                 continue
                                     if not real_target:
                                         real_target = "UNKNOWN"
@@ -163,11 +147,11 @@ def main():
                                 else:
                                     logger.info("Mail REPLY olarak işlenmedi: From=%s | Subject=%s", real_email, subject)
                             except Exception as e:
-                                logger.exception("Message parsing failed for %s msg %s: %s", decoded_name, num, e)
+                                logger.exception("Message parsing failed for %s msg %s: %s", folder_name, num, e)
                                 continue
 
                 except Exception as e:
-                    logger.warning("%s klasör işlenemedi (%s): %s", imap_user, decoded_name, e)
+                    logger.warning("%s klasör işlenemedi (%s): %s", imap_user, folder_name, e)
 
             mail.logout()
 
