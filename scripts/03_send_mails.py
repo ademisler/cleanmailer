@@ -91,10 +91,9 @@ def main():
             msg.attach(MIMEText(mail_body, "plain"))
 
             try:
-                server = smtplib.SMTP_SSL(sender["smtp_host"], int(sender["smtp_port"]))
-                server.login(sender["smtp_user"], sender["smtp_pass"])
-                server.sendmail(sender["smtp_user"], recipient, msg.as_string())
-                server.quit()
+                with smtplib.SMTP_SSL(sender["smtp_host"], int(sender["smtp_port"])) as server:
+                    server.login(sender["smtp_user"], sender["smtp_pass"])
+                    server.sendmail(sender["smtp_user"], recipient, msg.as_string())
                 status = f"[OK] {recipient} - {sender['smtp_user']}"
                 daily_counter[sender["smtp_user"]] = daily_counter.get(sender["smtp_user"], 0) + 1
                 sent_count += 1
