@@ -9,7 +9,7 @@ This repository contains small utilities for filtering email lists, checking dom
    pip install -r requirements.txt
    ```
 2. Copy `.env.example` to `.env` and adjust values as needed. Important keys:
-   - `CLEANMAILER_HOME` (optional): root directory containing input, reports and other folders. Defaults to `/opt/clean_mailer`.
+   - `CLEANMAILER_HOME` (optional): root directory containing input, reports and other folders. Defaults to `/opt/cleanmailer`.
    - SMTP settings (`SMTP_SENDER`, `SMTP_RECEIVER`, `SMTP_SERVER`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`) for `mailer.py`.
    - IMAP settings (`IMAP_HOST`, `IMAP_PORT`, `EMAIL_USER`, `EMAIL_PASS`) for `imap_dump.py`.
    - `ADMIN_USER`, `ADMIN_PASS` and `FLASK_SECRET` for the web panel.

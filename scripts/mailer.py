@@ -1,8 +1,9 @@
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.application import MIMEApplication
+import argparse
 import os
+import smtplib
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 def send_report(subject, body, attachments=None):
     sender_email = os.environ.get("SMTP_SENDER")
@@ -50,3 +51,18 @@ def send_report(subject, body, attachments=None):
     server.login(smtp_user, smtp_pass)
     server.sendmail(sender_email, receiver_email, msg.as_string())
     server.quit()
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Send a report email")
+    parser.add_argument("-s", "--subject", default="CleanMailer Report",
+                        help="Email subject")
+    parser.add_argument("-b", "--body", default="See attachments for details.",
+                        help="Email body")
+    parser.add_argument("attachments", nargs="*", help="Files to attach")
+    args = parser.parse_args()
+    send_report(args.subject, args.body, args.attachments)
+
+
+if __name__ == "__main__":
+    main()

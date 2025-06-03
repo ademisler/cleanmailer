@@ -35,6 +35,7 @@ SCRIPT_MAP = {
     "send": os.environ.get("SCRIPT_PATH_SEND"),
     "feedback": os.environ.get("SCRIPT_PATH_FEEDBACK"),
     "export": os.environ.get("SCRIPT_PATH_EXPORT"),
+    "mailer": os.environ.get("SCRIPT_PATH_MAILER"),
 }
 
 USERNAME = os.environ.get("ADMIN_USER", "admin")
