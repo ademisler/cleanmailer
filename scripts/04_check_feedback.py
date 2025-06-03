@@ -78,18 +78,17 @@ def main():
                     continue
 
                 folder_name = match.group(1)
-                decoded_name = imap_utf7.decode(folder_name)
+                try:
+                    decoded_name = imap_utf7.decode(folder_name)
+                except Exception:
+                    decoded_name = folder_name  # hata varsa decode etme
+
                 folder_norm = normalize(decoded_name)
 
-                keywords = [
-                    "inbox", "spam", "junk", "trash",
-                    "replies", "reply", "sent",
-                    "posta", "gelenler", "yanit"
-                ]
-
+                # İsteğe bağlı klasör filtreleme:
+                # keywords = ["inbox", "spam", "junk", "trash", "replies", "reply", "sent", "posta", "gelenler", "yanit"]
                 # if not any(k in folder_norm for k in keywords):
                 #     continue
-
 
                 utf7_folder = imap_utf7.encode(decoded_name)
 
@@ -157,11 +156,7 @@ def main():
                                     logger.info("Reply detected: %s | Subject=%s", real_email, subject)
                                     all_replied.append({"email": real_email, "subject": subject})
                                 else:
-                                    logger.info(
-                                        "Mail REPLY olarak işlenmedi: From=%s | Subject=%s",
-                                        real_email,
-                                        subject,
-                                    )
+                                    logger.info("Mail REPLY olarak işlenmedi: From=%s | Subject=%s", real_email, subject)
                             except Exception as e:
                                 logger.exception("Message parsing failed for %s msg %s: %s", decoded_name, num, e)
                                 continue
