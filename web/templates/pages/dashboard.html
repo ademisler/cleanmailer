@@ -68,27 +68,41 @@
       </div>
     </div>
     {% endif %}
-    {% if smtp_limits %}
-    <div class="card shadow-sm mt-4">
+  </div>
+</div>
+{% if smtp_limits %}
+<div class="row">
+  <div class="col-12 mb-4">
+    <div class="card shadow-sm">
       <div class="card-body">
         <h6 class="card-title">{{ _('SMTP Limits') }}</h6>
         <div class="table-responsive">
           <table class="table table-sm table-bordered mb-0">
             <thead>
-              <tr><th>Email</th><th>{{ _('Remaining Limit') }}</th></tr>
+              <tr>
+                <th>Email</th>
+                <th>{{ _('Used') }}</th>
+                <th>{{ _('Limit') }}</th>
+                <th>{{ _('Remaining') }}</th>
+              </tr>
             </thead>
             <tbody>
               {% for row in smtp_limits %}
-              <tr><td>{{ row.email }}</td><td>{{ row.remaining }}</td></tr>
+              <tr>
+                <td>{{ row.email }}</td>
+                <td>{{ row.used }}</td>
+                <td>{{ row.limit }}</td>
+                <td>{{ row.remaining }}</td>
+              </tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
       </div>
     </div>
-    {% endif %}
   </div>
 </div>
+{% endif %}
 {% endblock %}
 {% block scripts %}
 <script>

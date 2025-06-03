@@ -108,6 +108,9 @@ TRANSLATIONS = {
         "Job triggered": "Görev tetiklendi",
         "SMTP Limits": "SMTP Limitleri",
         "Remaining Limit": "Kalan Limit",
+        "Used": "Kullanılan",
+        "Limit": "Limit",
+        "Remaining": "Kalan",
     }
 }
 
@@ -204,7 +207,7 @@ def load_daily_counter(day: str | None = None) -> dict:
 
 
 def get_smtp_limits() -> list[dict]:
-    """Return remaining daily quotas for each SMTP account."""
+    """Return daily quota usage details for each SMTP account."""
     df = load_dataframe(SENDERS_PATH)
     if df.empty:
         return []
@@ -222,7 +225,9 @@ def get_smtp_limits() -> list[dict]:
             continue
         used = int(counters.get(email, 0))
         remaining = max(limit - used, 0)
-        limits.append({"email": email, "remaining": remaining, "limit": limit})
+        limits.append(
+            {"email": email, "used": used, "limit": limit, "remaining": remaining}
+        )
     return limits
 
 

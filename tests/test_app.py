@@ -54,3 +54,21 @@ def test_parse_send_log_filter_range(tmp_path, monkeypatch):
     per_day = {d: c for d, c in per_day.items() if d >= start}
     assert total == 2
     assert list(per_day.keys()) == [today]
+
+
+def test_get_smtp_limits(tmp_path, monkeypatch):
+    home = tmp_path
+    (home / "input").mkdir()
+    (home / "logs").mkdir()
+    df = flask_app.pd.DataFrame({"Mail": ["a@example.com"], "Günlük Limit": [100]})
+    df.to_excel(home / "input" / "Senders.xlsx", index=False)
+    counters = {"a@example.com": 40}
+    day = flask_app.datetime.now().strftime("%Y-%m-%d")
+    counter_path = home / "logs" / "daily_counter.json"
+    counter_path.write_text(flask_app.json.dumps({day: counters}))
+    monkeypatch.setenv("CLEANMAILER_HOME", str(home))
+    importlib.reload(flask_app)
+    limits = flask_app.get_smtp_limits()
+    assert limits == [
+        {"email": "a@example.com", "used": 40, "limit": 100, "remaining": 60}
+    ]
