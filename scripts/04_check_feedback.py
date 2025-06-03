@@ -1,4 +1,3 @@
-
 import imaplib
 import logging
 import os
@@ -16,19 +15,13 @@ SENDERS_FILE = os.path.join(ROOT, "input", "Senders.xlsx")
 BOUNCE_FILE = os.path.join(ROOT, "reports", "bounced.xlsx")
 REPLY_FILE = os.path.join(ROOT, "reports", "replied.xlsx")
 
-
 def normalize(text: str) -> str:
-    """Return a normalized folder name for comparison."""
     if not text:
         return ""
     text = unicodedata.normalize("NFKD", text)
-    text = text.lower()
-    text = text.replace(".", "").replace(" ", "")
-    return text
-
+    return text.lower().replace(".", "").replace(" ", "")
 
 def decode_mime_words(text: str) -> str:
-    """Decode a MIME encoded string into unicode."""
     try:
         decoded = decode_header(text)
         return "".join(
@@ -39,7 +32,6 @@ def decode_mime_words(text: str) -> str:
         return text
 
 LOG_FILE = os.path.join(LOG_DIR, "feedback.log")
-
 
 def main():
     os.makedirs(LOG_DIR, exist_ok=True)
@@ -90,20 +82,13 @@ def main():
                 folder_norm = normalize(decoded_name)
 
                 keywords = [
-                    "inbox",
-                    "spam",
-                    "junk",
-                    "trash",
-                    "replies",
-                    "reply",
-                    "sent",
-                    "posta",
-                    "gelenler",
-                    "yanit",
+                    "inbox", "spam", "junk", "trash",
+                    "replies", "reply", "sent",
+                    "posta", "gelenler", "yanit"
                 ]
 
                 if not any(k in folder_norm for k in keywords):
-                    continue
+                    continue  # test amaçlı yorum satırı yapabilirsin
 
                 utf7_folder = imap_utf7.encode(decoded_name)
 
@@ -122,14 +107,12 @@ def main():
                         if status != "OK":
                             logger.warning("Fetch failed for %s msg %s: %s", decoded_name, num, status)
                             continue
-                        logger.debug("fetch result (%s): %s", num, status)
                         for response_part in msg_data:
                             if not isinstance(response_part, tuple):
                                 continue
                             try:
                                 msg = email.message_from_bytes(response_part[1])
                                 subject = decode_mime_words(msg.get("Subject", ""))
-
                                 from_email = msg.get("From", "")
                                 real_email = parseaddr(from_email)[1]
 
@@ -166,7 +149,9 @@ def main():
                                 elif (
                                     "re:" in subject.lower()
                                     or "reply" in subject.lower()
+                                    or "ynt:" in subject.lower()
                                     or msg.get("In-Reply-To")
+                                    or msg.get("References")
                                 ):
                                     logger.info("Reply detected: %s | Subject=%s", real_email, subject)
                                     all_replied.append({"email": real_email, "subject": subject})
@@ -177,14 +162,8 @@ def main():
                                         subject,
                                     )
                             except Exception as e:
-                                logger.exception(
-                                    "Message parsing failed for %s msg %s: %s",
-                                    decoded_name,
-                                    num,
-                                    e,
-                                )
+                                logger.exception("Message parsing failed for %s msg %s: %s", decoded_name, num, e)
                                 continue
-
 
                 except Exception as e:
                     logger.warning("%s klasör işlenemedi (%s): %s", imap_user, decoded_name, e)
@@ -200,13 +179,8 @@ def main():
     if all_replied:
         pd.DataFrame(all_replied).to_excel(REPLY_FILE, index=False)
 
-    logger.info(
-        "Script completed. Bounced: %d, Replied: %d",
-        len(all_bounced),
-        len(all_replied),
-    )
+    logger.info("Script completed. Bounced: %d, Replied: %d", len(all_bounced), len(all_replied))
     print(f"Toplam bounced: {len(all_bounced)} | replied: {len(all_replied)}")
-
 
 if __name__ == "__main__":
     main()
