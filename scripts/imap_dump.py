@@ -6,7 +6,8 @@ from email.utils import parseaddr
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+# Load variables from the global .env file
+load_dotenv(dotenv_path="/etc/cleanmailer/.env")
 
 # Hedef hesap bilgileri ortam değişkenlerinden okunur
 IMAP_HOST = os.environ.get("IMAP_HOST")

@@ -6,7 +6,8 @@ import email
 from dotenv import load_dotenv
 import pandas as pd
 
-load_dotenv()
+# Load variables from the global .env file
+load_dotenv(dotenv_path="/etc/cleanmailer/.env")
 from email.header import decode_header
 from email.utils import parseaddr
 import unicodedata

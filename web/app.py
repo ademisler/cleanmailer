@@ -18,7 +18,8 @@ from flask import (
     send_file,
 )
 
-load_dotenv()
+# Load environment variables from the system-wide file
+load_dotenv(dotenv_path="/etc/cleanmailer/.env")
 
 ROOT = os.environ.get("CLEANMAILER_HOME", "/opt/cleanmailer")
 INPUT_DIR = os.path.join(ROOT, "input")
@@ -482,7 +483,7 @@ def run_script(name):
     if not script:
         flash("Unknown script", "error")
         return redirect(url_for("tasks"))
-    subprocess.run(["python", script])
+    subprocess.run(["python3", script])
     flash(f"{name} executed")
     return redirect(url_for("tasks"))
 
@@ -498,7 +499,7 @@ def cron_add():
         return redirect(url_for("tasks"))
     current = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
     lines = current.stdout.splitlines() if current.returncode == 0 else []
-    lines.append(f"{sched} python {script}")
+    lines.append(f"{sched} cd {ROOT} && python3 {script}")
     subprocess.run(["crontab", "-"], input="\n".join(lines) + "\n", text=True)
     flash(translate("Cron job added"))
     return redirect(url_for("tasks"))

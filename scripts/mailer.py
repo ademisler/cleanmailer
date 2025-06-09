@@ -3,7 +3,8 @@ import os
 import smtplib
 from dotenv import load_dotenv
 
-load_dotenv()
+# Load variables from the global .env file
+load_dotenv(dotenv_path="/etc/cleanmailer/.env")
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
