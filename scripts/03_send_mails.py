@@ -7,7 +7,8 @@ from email.mime.text import MIMEText
 from dotenv import load_dotenv
 import pandas as pd
 
-load_dotenv()
+# Dış klasördeki .env dosyasını yükle
+load_dotenv(dotenv_path="/etc/cleanmailer/.env")
 
 ROOT = os.environ.get("CLEANMAILER_HOME", "/opt/cleanmailer")
 MAIL_LIST_FILE = os.path.join(ROOT, "reports", "aktif_mailler.xlsx")
@@ -23,7 +24,7 @@ def main():
     with open(TEMPLATE_FILE, "r", encoding="utf-8") as f:
         mail_body = f.read()
 
-# Gönderici hesaplarını oku ve başlıkları normalize et
+    # Gönderici hesaplarını oku ve başlıkları normalize et
     df_senders = pd.read_excel(SENDERS_FILE)
     df_senders.columns = df_senders.columns.str.strip()
     df_senders = df_senders.rename(columns={
@@ -35,7 +36,7 @@ def main():
         "Günlük Limit": "DailyLimit",
     })
 
-# SMTP hesaplarını hazırla
+    # SMTP hesaplarını hazırla
     smtp_accounts = []
     for _, row in df_senders.iterrows():
         smtp_accounts.append(
@@ -49,7 +50,7 @@ def main():
             }
         )
 
-# Günlük sayaç dosyasını yükle veya başlat
+    # Günlük sayaç dosyasını yükle veya başlat
     today = datetime.now().strftime("%Y-%m-%d")
     if os.path.exists(COUNTER_FILE):
         with open(COUNTER_FILE, "r") as f:
@@ -62,7 +63,7 @@ def main():
 
     daily_counter = counters_all[today]
 
-# Hedef listeyi yükle
+    # Hedef listeyi yükle
     df_targets = pd.read_excel(MAIL_LIST_FILE)
     if "email" not in df_targets.columns:
         raise ValueError("Hedef listede 'email' sütunu bulunamadı.")
@@ -122,7 +123,7 @@ def main():
 
         log.write(f"--- Gönderim Bitti: {datetime.now()} ---\n")
 
-# Sayaçları güncelle
+    # Sayaçları güncelle
     counters_all[today] = daily_counter
     with open(COUNTER_FILE, "w") as f:
         json.dump(counters_all, f, indent=2)
@@ -132,4 +133,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
