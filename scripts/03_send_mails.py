@@ -71,16 +71,22 @@ def main():
     with open(LOG_FILE, "a", encoding="utf-8") as log:
         log.write(f"\n--- Gönderim Başladı: {datetime.now()} ---\n")
 
+        sender_idx = 0
+        total_accounts = len(smtp_accounts)
+
         for index, row in df_targets.iterrows():
             recipient = row["email"]
 
-            # Uygun bir SMTP hesabı bul
+            # Uygun bir SMTP hesabı bul (round-robin)
             sender = None
-            for account in smtp_accounts:
+            for offset in range(total_accounts):
+                idx = (sender_idx + offset) % total_accounts
+                account = smtp_accounts[idx]
                 email = account["smtp_user"]
                 used = daily_counter.get(email, 0)
                 if used < account["limit"]:
                     sender = account
+                    sender_idx = (idx + 1) % total_accounts
                     break
 
             if not sender:
