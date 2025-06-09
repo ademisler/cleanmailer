@@ -1,5 +1,8 @@
 import os
 import pandas as pd
+from dotenv import load_dotenv
+
+load_dotenv()
 
 ROOT = os.environ.get("CLEANMAILER_HOME", "/opt/cleanmailer")
 ACTIVE_MAILS = os.path.join(ROOT, "reports", "aktif_mailler.xlsx")

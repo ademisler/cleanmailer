@@ -8,9 +8,9 @@ This repository contains small utilities for filtering email lists, checking dom
    ```bash
    pip install -r requirements.txt
    ```
-2. Copy `.env.example` to `.env` and adjust values as needed. Important keys:
+2. Copy `.env.example` to `.env` and adjust values as needed. Important keys. All scripts automatically load this file using `python-dotenv`:
    - `CLEANMAILER_HOME` (optional): root directory containing input, reports and other folders. Defaults to `/opt/cleanmailer`.
-   - SMTP settings (`SMTP_SENDER`, `SMTP_RECEIVER`, `SMTP_SERVER`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`) for `mailer.py`.
+   - SMTP settings (`SMTP_SENDER`, `SMTP_RECEIVER`, `SMTP_SERVER`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`) for `mailer.py`. Sample values are provided in `.env.example`.
    - IMAP settings (`IMAP_HOST`, `IMAP_PORT`, `EMAIL_USER`, `EMAIL_PASS`) for `imap_dump.py`.
    - `ADMIN_USER`, `ADMIN_PASS` and `FLASK_SECRET` for the web panel.
 3. Ensure a `logs/` directory exists under `CLEANMAILER_HOME`. Most scripts will create it automatically if missing.

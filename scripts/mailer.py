@@ -1,6 +1,9 @@
 import argparse
 import os
 import smtplib
+from dotenv import load_dotenv
+
+load_dotenv()
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
