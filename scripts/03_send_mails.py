@@ -1,7 +1,7 @@
 import json
 import os
 import smtplib
-from datetime import datetime
+from datetime import datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from dotenv import load_dotenv
@@ -17,6 +17,7 @@ TEMPLATE_FILE = os.path.join(ROOT, "templates", "mail_template.txt")
 LOG_DIR = os.path.join(ROOT, "logs")
 LOG_FILE = os.path.join(LOG_DIR, "send.log")
 COUNTER_FILE = os.path.join(LOG_DIR, "daily_counter.json")
+STATE_FILE = os.path.join(LOG_DIR, "smtp_state.json")
 
 def main():
     os.makedirs(LOG_DIR, exist_ok=True)
@@ -63,6 +64,13 @@ def main():
 
     daily_counter = counters_all[today]
 
+    # Hesap durumu dosyasını yükle
+    if os.path.exists(STATE_FILE):
+        with open(STATE_FILE, "r") as f:
+            smtp_state = json.load(f)
+    else:
+        smtp_state = {}
+
     # Hedef listeyi yükle
     df_targets = pd.read_excel(MAIL_LIST_FILE)
     if "email" not in df_targets.columns:
@@ -75,15 +83,29 @@ def main():
     with open(LOG_FILE, "a", encoding="utf-8") as log:
         log.write(f"\n--- Gönderim Başladı: {datetime.now()} ---\n")
 
-        available_accounts = [
-            acc for acc in smtp_accounts
-            if daily_counter.get(acc["smtp_user"], 0) < acc["limit"]
-        ]
+        available_accounts = []
+        for acc in smtp_accounts:
+            if daily_counter.get(acc["smtp_user"], 0) >= acc["limit"]:
+                continue
+            state = smtp_state.get(acc["smtp_user"], {})
+            paused_until = state.get("paused_until")
+            if paused_until:
+                try:
+                    until = datetime.strptime(paused_until, "%Y-%m-%d")
+                    if until > datetime.now():
+                        continue
+                    else:
+                        state.pop("paused_until", None)
+                        smtp_state[acc["smtp_user"]] = state
+                except Exception:
+                    pass
+            available_accounts.append(acc)
 
         if not available_accounts:
             warning = "Uygun SMTP hesabı kalmadı. Gönderim durduruldu."
             print(warning)
-            log.write(warning + "\n")
+            ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            log.write(f"{ts} {warning}\n")
         else:
             for account, recipient in zip(available_accounts, recipient_batch):
                 msg = MIMEMultipart()
@@ -100,14 +122,26 @@ def main():
                     daily_counter[account["smtp_user"]] = daily_counter.get(account["smtp_user"], 0) + 1
                     sent_count += 1
                 except Exception as e:
-                    status = f"[ERROR] {account['smtp_user']} -> {recipient} : {str(e)}"
+                    err = str(e)
+                    if "spam" in err.lower():
+                        state = smtp_state.setdefault(account["smtp_user"], {"spam_strikes": 0})
+                        state["spam_strikes"] = state.get("spam_strikes", 0) + 1
+                        pause_days = 7 if state["spam_strikes"] > 1 else 3
+                        pause_until = (datetime.now() + timedelta(days=pause_days)).strftime("%Y-%m-%d")
+                        state["paused_until"] = pause_until
+                        smtp_state[account["smtp_user"]] = state
+                        status = f"[FAIL] {account['smtp_user']} paused until {pause_until} : {err}"
+                    else:
+                        status = f"[ERROR] {account['smtp_user']} -> {recipient} : {err}"
 
-                log.write(status + "\n")
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                log.write(f"{timestamp} {status}\n")
 
             if len(available_accounts) < len(recipient_batch):
                 warning = "Uygun SMTP hesabı kalmadı. Gönderim durduruldu."
                 print(warning)
-                log.write(warning + "\n")
+                ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                log.write(f"{ts} {warning}\n")
 
             # işlenen alıcıları listeden çıkar ve kaydet
             if recipient_batch:
@@ -127,6 +161,8 @@ def main():
     counters_all[today] = daily_counter
     with open(COUNTER_FILE, "w") as f:
         json.dump(counters_all, f, indent=2)
+    with open(STATE_FILE, "w") as f:
+        json.dump(smtp_state, f, indent=2)
 
     print(f"Toplam gönderilen e-posta: {sent_count}")
 

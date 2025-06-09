@@ -171,7 +171,7 @@ def parse_send_log():
             if "Gönderim Başladı" in line and m:
                 date = m.group(1)
                 per_day.setdefault(date, 0)
-            elif line.startswith("[OK]"):
+            elif "[OK]" in line:
                 total += 1
                 if date:
                     per_day[date] = per_day.get(date, 0) + 1
