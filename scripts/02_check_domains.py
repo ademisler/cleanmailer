@@ -5,7 +5,8 @@ import dns.resolver
 from dns.exception import DNSException
 from dotenv import load_dotenv
 
-load_dotenv()
+# Load variables from the global .env file
+load_dotenv(dotenv_path="/etc/cleanmailer/.env")
 
 ROOT = os.environ.get("CLEANMAILER_HOME", "/opt/cleanmailer")
 INPUT_FILE = os.path.join(ROOT, "reports", "kontrol_edilmemis.xlsx")
