@@ -1,5 +1,6 @@
 import importlib.util
 from pathlib import Path
+from datetime import datetime
 import pandas as pd
 
 class DummySMTP:
@@ -62,4 +63,12 @@ def test_one_per_account(monkeypatch, tmp_path):
     DummySMTP.sent = []
     mod.main()
     assert DummySMTP.sent == ['a@example.com', 'b@example.com']
+
+    remaining = pd.read_excel(tmp_path / 'reports' / 'aktif_mailler.xlsx')
+    assert remaining['email'].tolist() == ['z@example.com']
+
+    sent_file = tmp_path / 'checked' / f"sent_{datetime.now().strftime('%Y-%m-%d')}.xlsx"
+    assert sent_file.exists()
+    sent_df = pd.read_excel(sent_file)
+    assert sent_df['email'].tolist() == ['x@example.com', 'y@example.com']
 
