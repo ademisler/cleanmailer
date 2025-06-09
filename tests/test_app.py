@@ -22,11 +22,11 @@ def test_parse_send_log_multiple_days(tmp_path, monkeypatch):
     log.write_text(
         """
 --- Gönderim Başladı: 2023-10-01 10:00 ---
-[OK] a@example.com
+2023-10-01 10:01:00 [OK] a@example.com
 --- Gönderim Bitti: 2023-10-01 10:05 ---
 --- Gönderim Başladı: 2023-10-02 11:00 ---
-[OK] b@example.com
-[OK] c@example.com
+2023-10-02 11:01:00 [OK] b@example.com
+2023-10-02 11:02:00 [OK] c@example.com
 """
     )
     monkeypatch.setattr(flask_app, "SEND_LOG", str(log))
@@ -42,10 +42,10 @@ def test_parse_send_log_filter_range(tmp_path, monkeypatch):
     log.write_text(
         f"""
 --- Gönderim Başladı: {old_date} 10:00 ---
-[OK] old@example.com
+2023-01-01 09:00:00 [OK] old@example.com
 --- Gönderim Bitti: {old_date} 10:01 ---
 --- Gönderim Başladı: {today} 12:00 ---
-[OK] new@example.com
+2023-01-02 12:01:00 [OK] new@example.com
 """
     )
     monkeypatch.setattr(flask_app, "SEND_LOG", str(log))
