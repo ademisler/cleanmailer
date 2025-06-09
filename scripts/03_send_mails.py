@@ -68,6 +68,7 @@ def main():
         raise ValueError("Hedef listede 'email' sütunu bulunamadı.")
 
     recipients = df_targets["email"].dropna().tolist()
+    recipient_batch = recipients[: len(smtp_accounts)]
     sent_count = 0
 
     with open(LOG_FILE, "a", encoding="utf-8") as log:
@@ -83,7 +84,7 @@ def main():
             print(warning)
             log.write(warning + "\n")
         else:
-            for account, recipient in zip(available_accounts, recipients):
+            for account, recipient in zip(available_accounts, recipient_batch):
                 msg = MIMEMultipart()
                 msg["From"] = f"{account['from_name']} <{account['smtp_user']}>"
                 msg["To"] = recipient
@@ -102,10 +103,22 @@ def main():
 
                 log.write(status + "\n")
 
-            if len(available_accounts) < len(recipients):
+            if len(available_accounts) < len(recipient_batch):
                 warning = "Uygun SMTP hesabı kalmadı. Gönderim durduruldu."
                 print(warning)
                 log.write(warning + "\n")
+
+            # işlenen alıcıları listeden çıkar ve kaydet
+            if recipient_batch:
+                df_targets.iloc[len(recipient_batch):].to_excel(MAIL_LIST_FILE, index=False)
+                checked_dir = os.path.join(ROOT, "checked")
+                os.makedirs(checked_dir, exist_ok=True)
+                out_path = os.path.join(checked_dir, f"sent_{today}.xlsx")
+                df_sent = pd.DataFrame({"email": recipient_batch})
+                if os.path.exists(out_path):
+                    prev = pd.read_excel(out_path)
+                    df_sent = pd.concat([prev, df_sent], ignore_index=True)
+                df_sent.to_excel(out_path, index=False)
 
         log.write(f"--- Gönderim Bitti: {datetime.now()} ---\n")
 
