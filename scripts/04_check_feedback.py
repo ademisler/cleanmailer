@@ -3,7 +3,10 @@ import logging
 import os
 import re
 import email
+from dotenv import load_dotenv
 import pandas as pd
+
+load_dotenv()
 from email.header import decode_header
 from email.utils import parseaddr
 import unicodedata

@@ -4,6 +4,9 @@ import email
 from email.header import decode_header
 from email.utils import parseaddr
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Hedef hesap bilgileri ortam değişkenlerinden okunur
 IMAP_HOST = os.environ.get("IMAP_HOST")

@@ -4,7 +4,10 @@ import smtplib
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from dotenv import load_dotenv
 import pandas as pd
+
+load_dotenv()
 
 ROOT = os.environ.get("CLEANMAILER_HOME", "/opt/cleanmailer")
 MAIL_LIST_FILE = os.path.join(ROOT, "reports", "aktif_mailler.xlsx")

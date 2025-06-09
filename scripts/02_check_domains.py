@@ -3,6 +3,9 @@ import os
 import pandas as pd
 import dns.resolver
 from dns.exception import DNSException
+from dotenv import load_dotenv
+
+load_dotenv()
 
 ROOT = os.environ.get("CLEANMAILER_HOME", "/opt/cleanmailer")
 INPUT_FILE = os.path.join(ROOT, "reports", "kontrol_edilmemis.xlsx")
