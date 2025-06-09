@@ -13,6 +13,8 @@ ACTIVE_OUTPUT = os.path.join(ROOT, "reports", "aktif_mailler.xlsx")
 INACTIVE_OUTPUT = os.path.join(ROOT, "reports", "inactive_domains.xlsx")
 
 def is_domain_active(domain):
+    if not isinstance(domain, str) or not domain:
+        return False
     try:
         dns.resolver.resolve(domain, "MX")
         return True

@@ -41,3 +41,14 @@ def test_is_domain_active_fail(monkeypatch):
     monkeypatch.setattr(dns.resolver, "resolve", fake_resolve)
     assert check_domains.is_domain_active("example.com") is False
 
+
+def test_is_domain_active_invalid(monkeypatch):
+    """Should return False for invalid or missing domain values"""
+
+    def fake_resolve(domain, record):
+        raise DNSException()
+
+    monkeypatch.setattr(dns.resolver, "resolve", fake_resolve)
+    assert check_domains.is_domain_active(None) is False
+    assert check_domains.is_domain_active(float("nan")) is False
+
