@@ -66,50 +66,46 @@ def main():
     df_targets = pd.read_excel(MAIL_LIST_FILE)
     if "email" not in df_targets.columns:
         raise ValueError("Hedef listede 'email' sütunu bulunamadı.")
+
+    recipients = df_targets["email"].dropna().tolist()
     sent_count = 0
 
     with open(LOG_FILE, "a", encoding="utf-8") as log:
         log.write(f"\n--- Gönderim Başladı: {datetime.now()} ---\n")
 
-        sender_idx = 0
-        total_accounts = len(smtp_accounts)
+        available_accounts = [
+            acc for acc in smtp_accounts
+            if daily_counter.get(acc["smtp_user"], 0) < acc["limit"]
+        ]
 
-        for index, row in df_targets.iterrows():
-            recipient = row["email"]
+        if not available_accounts:
+            warning = "Uygun SMTP hesabı kalmadı. Gönderim durduruldu."
+            print(warning)
+            log.write(warning + "\n")
+        else:
+            for account, recipient in zip(available_accounts, recipients):
+                msg = MIMEMultipart()
+                msg["From"] = f"{account['from_name']} <{account['smtp_user']}>"
+                msg["To"] = recipient
+                msg["Subject"] = "Potential Business Collaboration Inquiry"
+                msg.attach(MIMEText(mail_body, "plain"))
 
-            # Uygun bir SMTP hesabı bul (round-robin)
-            sender = None
-            for offset in range(total_accounts):
-                idx = (sender_idx + offset) % total_accounts
-                account = smtp_accounts[idx]
-                email = account["smtp_user"]
-                used = daily_counter.get(email, 0)
-                if used < account["limit"]:
-                    sender = account
-                    sender_idx = (idx + 1) % total_accounts
-                    break
+                try:
+                    with smtplib.SMTP_SSL(account["smtp_host"], int(account["smtp_port"])) as server:
+                        server.login(account["smtp_user"], account["smtp_pass"])
+                        server.sendmail(account["smtp_user"], recipient, msg.as_string())
+                    status = f"[OK] {account['smtp_user']} -> {recipient}"
+                    daily_counter[account["smtp_user"]] = daily_counter.get(account["smtp_user"], 0) + 1
+                    sent_count += 1
+                except Exception as e:
+                    status = f"[ERROR] {account['smtp_user']} -> {recipient} : {str(e)}"
 
-            if not sender:
-                print("Uygun SMTP hesabı kalmadı. Gönderim durduruldu.")
-                break
+                log.write(status + "\n")
 
-            msg = MIMEMultipart()
-            msg["From"] = f"{sender['from_name']} <{sender['smtp_user']}>"
-            msg["To"] = recipient
-            msg["Subject"] = "Potential Business Collaboration Inquiry"
-            msg.attach(MIMEText(mail_body, "plain"))
-
-            try:
-                with smtplib.SMTP_SSL(sender["smtp_host"], int(sender["smtp_port"])) as server:
-                    server.login(sender["smtp_user"], sender["smtp_pass"])
-                    server.sendmail(sender["smtp_user"], recipient, msg.as_string())
-                status = f"[OK] {recipient} - {sender['smtp_user']}"
-                daily_counter[sender["smtp_user"]] = daily_counter.get(sender["smtp_user"], 0) + 1
-                sent_count += 1
-            except Exception as e:
-                status = f"[ERROR] {recipient} - {str(e)}"
-
-            log.write(status + "\n")
+            if len(available_accounts) < len(recipients):
+                warning = "Uygun SMTP hesabı kalmadı. Gönderim durduruldu."
+                print(warning)
+                log.write(warning + "\n")
 
         log.write(f"--- Gönderim Bitti: {datetime.now()} ---\n")
 

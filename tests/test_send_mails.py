@@ -55,11 +55,11 @@ def setup_files(tmp_path):
     (logs_dir / 'daily_counter.json').write_text('{}')
 
 
-def test_round_robin(monkeypatch, tmp_path):
+def test_one_per_account(monkeypatch, tmp_path):
     setup_files(tmp_path)
     mod = load_module(monkeypatch, tmp_path)
     monkeypatch.setattr(mod.smtplib, 'SMTP_SSL', DummySMTP)
     DummySMTP.sent = []
     mod.main()
-    assert DummySMTP.sent[:3] == ['a@example.com', 'b@example.com', 'a@example.com']
+    assert DummySMTP.sent == ['a@example.com', 'b@example.com']
 
