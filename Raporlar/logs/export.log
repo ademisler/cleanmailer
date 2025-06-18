@@ -1,0 +1,56 @@
+/opt/cleanmailer/scripts/05_export_clean_list.py:31: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df_clean["replied"] = df_clean["email"].isin(replied_emails)
+Temiz liste oluşturuldu: 12046 adres kaydedildi.
+Yedek kopya oluşturuldu: /opt/cleanmailer/checked/temiz_liste_20250609.xlsx
+/opt/cleanmailer/scripts/05_export_clean_list.py:31: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df_clean["replied"] = df_clean["email"].isin(replied_emails)
+Temiz liste oluşturuldu: 11080 adres kaydedildi.
+Yedek kopya oluşturuldu: /opt/cleanmailer/checked/temiz_liste_20250610.xlsx
+/opt/cleanmailer/scripts/05_export_clean_list.py:31: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df_clean["replied"] = df_clean["email"].isin(replied_emails)
+Temiz liste oluşturuldu: 9568 adres kaydedildi.
+Yedek kopya oluşturuldu: /opt/cleanmailer/checked/temiz_liste_20250611.xlsx
+/opt/cleanmailer/scripts/05_export_clean_list.py:31: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df_clean["replied"] = df_clean["email"].isin(replied_emails)
+Temiz liste oluşturuldu: 8056 adres kaydedildi.
+Yedek kopya oluşturuldu: /opt/cleanmailer/checked/temiz_liste_20250612.xlsx
+/opt/cleanmailer/scripts/05_export_clean_list.py:31: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df_clean["replied"] = df_clean["email"].isin(replied_emails)
+Temiz liste oluşturuldu: 6544 adres kaydedildi.
+Yedek kopya oluşturuldu: /opt/cleanmailer/checked/temiz_liste_20250613.xlsx
+/opt/cleanmailer/scripts/05_export_clean_list.py:31: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df_clean["replied"] = df_clean["email"].isin(replied_emails)
+Temiz liste oluşturuldu: 5032 adres kaydedildi.
+Yedek kopya oluşturuldu: /opt/cleanmailer/checked/temiz_liste_20250614.xlsx
+Temiz liste oluşturuldu: 3522 adres kaydedildi.
+Yedek kopya oluşturuldu: /opt/cleanmailer/checked/temiz_liste_20250615.xlsx
+Temiz liste oluşturuldu: 2010 adres kaydedildi.
+Yedek kopya oluşturuldu: /opt/cleanmailer/checked/temiz_liste_20250616.xlsx
+Temiz liste oluşturuldu: 498 adres kaydedildi.
+Yedek kopya oluşturuldu: /opt/cleanmailer/checked/temiz_liste_20250617.xlsx
+Temiz liste oluşturuldu: 0 adres kaydedildi.
+Yedek kopya oluşturuldu: /opt/cleanmailer/checked/temiz_liste_20250618.xlsx
