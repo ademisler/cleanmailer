@@ -1,12 +1,14 @@
 import importlib.util
-import os
 from pathlib import Path
 import pandas as pd
 
 MODULE_PATH = Path(__file__).resolve().parents[1] / "scripts" / "01_filter_existing.py"
-spec = importlib.util.spec_from_file_location("filter_mod", MODULE_PATH)
-filter_mod = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(filter_mod)
+
+def load_module():
+    spec = importlib.util.spec_from_file_location("filter_mod", MODULE_PATH)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def test_filter_existing(tmp_path, monkeypatch):
@@ -23,8 +25,8 @@ def test_filter_existing(tmp_path, monkeypatch):
     pd.DataFrame({"email": ["a@example.com"]}).to_excel(checked_dir / "old.xlsx", index=False)
 
     monkeypatch.setenv("CLEANMAILER_HOME", str(home))
-    importlib.reload(filter_mod)
-    filter_mod.filter_existing()
+    mod = load_module()
+    mod.filter_existing()
 
     out = pd.read_excel(reports_dir / "kontrol_edilmemis.xlsx")
     assert out["email"].tolist() == ["b@example.com"]

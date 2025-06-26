@@ -4,7 +4,7 @@ This repository contains small utilities for filtering email lists, checking dom
 
 ## Setup
 
-1. Install Python dependencies:
+1. Install Python dependencies (Python 3.12 recommended):
    ```bash
    pip install -r requirements.txt
    ```
