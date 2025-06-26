@@ -1,2 +1,0 @@
-Mail,Mdp,IMAP Host,IMAP Port,SMTP Host,SMTP Port,Nom,Günlük Limit
-liora@example.com,password123,imap.example.com,993,smtp.example.com,465,Liora,75
